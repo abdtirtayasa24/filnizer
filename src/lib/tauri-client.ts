@@ -61,6 +61,41 @@ export type ScanProgressEvent = {
   scannedFiles: number;
 };
 
+export type OperationPlan = {
+  id: string;
+  jobId: string | null;
+  status: "preview" | "applying" | "applied" | "failed" | "undone";
+  operations: PlannedOperation[];
+};
+
+export type PlannedOperation = {
+  id: string;
+  kind: "move" | "rename" | "convert";
+  sourcePath: string;
+  targetPath: string;
+  conflictPolicy: "skip" | "rename" | "overwrite";
+};
+
+export type ApplyFileResult = {
+  operationId: string;
+  sourcePath: string;
+  targetPath: string | null;
+  status: "success" | "failed" | "skipped";
+  message: string | null;
+};
+
+export type ApplyOrganizerPlanResponse = {
+  jobId: string;
+  planId: string;
+  results: ApplyFileResult[];
+};
+
+export type DuplicateSet = {
+  sizeBytes: number;
+  blake3: string;
+  paths: string[];
+};
+
 export async function invokeCommand<T>(
   command: string,
   args?: Record<string, unknown>,
@@ -88,6 +123,37 @@ export function saveOrganizerRules(
 ): Promise<OrganizerRule[]> {
   return invokeCommand<OrganizerRule[]>("save_organizer_rules", {
     request: { rules },
+  });
+}
+
+export function previewOrganizerPlan(
+  files: FileEntry[],
+  destinationRoot: string,
+): Promise<OperationPlan> {
+  return invokeCommand<OperationPlan>("preview_organizer_plan_command", {
+    request: { files, destinationRoot, cleanFilenames: true },
+  });
+}
+
+export function applyOrganizerPlan(
+  plan: OperationPlan,
+): Promise<ApplyOrganizerPlanResponse> {
+  return invokeCommand<ApplyOrganizerPlanResponse>("apply_organizer_plan_command", {
+    request: { plan },
+  });
+}
+
+export function undoOrganizerPlan(
+  plan: OperationPlan,
+): Promise<ApplyOrganizerPlanResponse> {
+  return invokeCommand<ApplyOrganizerPlanResponse>("undo_organizer_plan_command", {
+    request: { plan },
+  });
+}
+
+export function findDuplicateFiles(files: FileEntry[]): Promise<{ sets: DuplicateSet[] }> {
+  return invokeCommand<{ sets: DuplicateSet[] }>("find_duplicate_files", {
+    request: { files },
   });
 }
 

@@ -170,21 +170,35 @@ nav {
   color: #526070;
 }
 
-.rule-card {
-  max-width: 620px;
-  margin-top: 24px;
+.organizer-panel {
+  max-width: 1120px;
+  align-content: start;
+}
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.workflow-card,
+.results-panel {
   padding: 18px;
   border: 1px solid #eadaca;
   border-radius: 18px;
   background: #fffaf4;
 }
 
-.rule-card h3,
-.rule-card p {
+.workflow-card h3,
+.workflow-card p,
+.results-panel h3,
+.results-panel p {
   margin: 0;
 }
 
-.rule-card p {
+.workflow-card p,
+.results-panel p {
   margin-top: 12px;
   color: #667085;
 }
@@ -204,6 +218,41 @@ nav {
   border-radius: 12px;
   color: #223047;
   background: #ffffff;
+}
+
+.results-panel {
+  max-width: none;
+  margin-top: 18px;
+}
+
+.result-block {
+  margin-top: 16px;
+}
+
+.result-block ol,
+.result-block ul {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding-left: 22px;
+  color: #526070;
+  overflow-wrap: anywhere;
+}
+
+.pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 14px 0 0;
+  list-style: none;
+}
+
+.pill-list li {
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #1f5144;
+  background: #effaf6;
 }
 
 .empty-card,
@@ -261,7 +310,8 @@ nav {
   }
 
   .status-grid,
-  .rule-form {
+  .rule-form,
+  .workflow-grid {
     grid-template-columns: 1fr;
   }
 }
