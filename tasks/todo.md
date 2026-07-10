@@ -93,43 +93,43 @@
 
 ## Phase 3: Converters
 
-- [ ] Task 13: Add conversion job model and common output/conflict planning
+- [x] Task 13: Add conversion job model and common output/conflict planning
   - Acceptance: Conversion requests create jobs; output path planning handles skip/rename/overwrite modes; per-file statuses persist.
   - Verify: Unit tests for output conflict planning and job status transitions.
   - Files: `src-tauri/src/converter/mod.rs`, `src-tauri/src/converter/planner.rs`, `src-tauri/src/jobs/*`, `src-tauri/src/db/*`
   - Dependencies: Task 4
 
-- [ ] Task 14: Implement image conversion adapter and UI flow
+- [x] Task 14: Implement image conversion adapter and UI flow
   - Acceptance: Supported image inputs convert to selected output formats locally; errors are per-file and user-readable.
   - Verify: Fixture image conversion tests; manual UI conversion.
   - Files: `src-tauri/src/converter/image.rs`, `src-tauri/src/commands/converter.rs`, `src/features/converter/*`, `tests/fixtures/images/*`
   - Dependencies: Task 13
 
-- [ ] Task 15: Implement CSV/XLSX spreadsheet conversion adapters and UI flow
+- [x] Task 15: Implement CSV/XLSX spreadsheet conversion adapters and UI flow
   - Acceptance: CSV to XLSX and XLSX worksheet to CSV work for fixtures; delimiter/worksheet choices are handled for MVP.
   - Verify: Spreadsheet fixture tests; manual UI conversion.
   - Files: `src-tauri/src/converter/spreadsheet.rs`, `src-tauri/src/commands/converter.rs`, `src/features/converter/*`, `tests/fixtures/spreadsheets/*`
   - Dependencies: Task 13
 
-- [ ] Task 16: Add FFmpeg app-local detection and media conversion adapter
+- [x] Task 16: Add FFmpeg app-local detection and media conversion adapter
   - Acceptance: App detects app-local FFmpeg; media actions are disabled if missing; conversions use structured args and report progress where feasible.
   - Verify: Tool detection test; gated media fixture test when FFmpeg exists.
   - Files: `src-tauri/src/converter/media.rs`, `src-tauri/src/tools/ffmpeg.rs`, `src/features/settings/*`, `tests/fixtures/media/*`
   - Dependencies: Task 13
 
-- [ ] Task 17: Add app-local Pdfium detection and PDF to image/text adapters
+- [x] Task 17: Add app-local Pdfium detection and PDF to image/text adapters
   - Acceptance: App loads app-local Pdfium; PDF to image/text works for fixtures; missing Pdfium disables PDF actions clearly.
   - Verify: Tool detection test; PDF fixture conversion tests.
   - Files: `src-tauri/src/converter/pdf.rs`, `src-tauri/src/tools/pdfium.rs`, `src/features/converter/*`, `tests/fixtures/documents/*`
   - Dependencies: Task 13
 
-- [ ] Task 18: Add Markdown to PDF adapter with network/fetch disabled
+- [x] Task 18: Add Markdown to PDF adapter with network/fetch disabled
   - Acceptance: Local Markdown fixture converts to PDF; no URL/fetch feature is enabled; remote image/url inputs are rejected or ignored safely.
   - Verify: Markdown fixture test; inspect `Cargo.toml` features.
   - Files: `src-tauri/src/converter/markdown.rs`, `src-tauri/Cargo.toml`, `src/features/converter/*`, `tests/fixtures/documents/*`
   - Dependencies: Task 13
 
-- [ ] Task 19: Add LibreOffice detection and office-to-PDF adapter
+- [x] Task 19: Add LibreOffice detection and office-to-PDF adapter
   - Acceptance: App detects local LibreOffice; DOC/DOCX to PDF action is enabled only when available; missing state shows English setup guidance without opening network.
   - Verify: Tool detection tests; gated conversion test when LibreOffice exists.
   - Files: `src-tauri/src/tools/libreoffice.rs`, `src-tauri/src/converter/office.rs`, `src/features/settings/*`, `src/features/converter/*`
@@ -137,8 +137,8 @@
 
 ## Checkpoint: Converters
 
-- [ ] Run converter tests
-- [ ] Run `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings`
+- [x] Run converter tests
+- [x] Run `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings`
 - [ ] Manual fixture conversions for available backends
 - [ ] Confirm no conversion overwrites without explicit user choice
 
