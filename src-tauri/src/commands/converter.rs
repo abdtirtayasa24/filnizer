@@ -5,6 +5,7 @@ use uuid::Uuid;
 use crate::commands::{CommandResponse, CommandResult};
 use crate::converter::image::convert_images;
 use crate::converter::planner::{conversion_job_status, plan_conversion_outputs};
+use crate::converter::spreadsheet::convert_spreadsheets;
 use crate::db::jobs_repository::JobsRepository;
 use crate::db::operation_repository::OperationRepository;
 use crate::domain::conversion::{ConversionFileResult, ConversionRequest};
@@ -16,6 +17,14 @@ use crate::AppState;
 pub struct PlanConversionOutputsResponse {
     pub job_id: String,
     pub results: Vec<ConversionFileResult>,
+}
+
+#[tauri::command]
+pub async fn convert_spreadsheet_files(
+    request: ConversionRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<PlanConversionOutputsResponse> {
+    run_conversion_job("Spreadsheet conversion", request, state, convert_spreadsheets).await
 }
 
 #[tauri::command]

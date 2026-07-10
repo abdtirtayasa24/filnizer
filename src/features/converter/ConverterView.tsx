@@ -5,59 +5,98 @@ import {
   ConflictPolicy,
   ConversionFileResult,
   convertImageFiles,
+  convertSpreadsheetFiles,
   formatCommandError,
 } from "../../lib/tauri-client";
 
 export function ConverterView() {
-  const [inputPaths, setInputPaths] = useState<string[]>([]);
+  const [imagePaths, setImagePaths] = useState<string[]>([]);
+  const [spreadsheetPaths, setSpreadsheetPaths] = useState<string[]>([]);
   const [outputDirectory, setOutputDirectory] = useState<string | null>(null);
-  const [outputFormat, setOutputFormat] = useState("png");
+  const [imageOutputFormat, setImageOutputFormat] = useState("png");
+  const [spreadsheetOutputFormat, setSpreadsheetOutputFormat] = useState("xlsx");
   const [conflictPolicy, setConflictPolicy] = useState<ConflictPolicy>("rename");
   const [results, setResults] = useState<ConversionFileResult[]>([]);
   const [isConverting, setIsConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function chooseImages() {
+    const selected = await chooseFiles("Images", [
+      "png",
+      "jpg",
+      "jpeg",
+      "webp",
+      "bmp",
+      "tif",
+      "tiff",
+    ]);
+    if (selected) {
+      setImagePaths(selected);
+      resetResults();
+    }
+  }
+
+  async function chooseSpreadsheets() {
+    const selected = await chooseFiles("Spreadsheets", ["csv", "xlsx"]);
+    if (selected) {
+      setSpreadsheetPaths(selected);
+      resetResults();
+    }
+  }
+
+  async function chooseFiles(name: string, extensions: string[]) {
     const selected = await open({
       multiple: true,
-      filters: [
-        {
-          name: "Images",
-          extensions: ["png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff"],
-        },
-      ],
+      filters: [{ name, extensions }],
     });
 
     if (Array.isArray(selected)) {
-      setInputPaths(selected.filter((path): path is string => typeof path === "string"));
-      setResults([]);
-      setError(null);
-    } else if (typeof selected === "string") {
-      setInputPaths([selected]);
-      setResults([]);
-      setError(null);
+      return selected.filter((path): path is string => typeof path === "string");
     }
+
+    if (typeof selected === "string") {
+      return [selected];
+    }
+
+    return null;
   }
 
   async function chooseOutputDirectory() {
     const selected = await open({ directory: true, multiple: false });
     if (typeof selected === "string") {
       setOutputDirectory(selected);
-      setResults([]);
-      setError(null);
+      resetResults();
     }
   }
 
   async function convertImages() {
+    await convertFiles(imagePaths, imageOutputFormat, convertImageFiles, "Choose image files and an output folder before converting.");
+  }
+
+  async function convertSpreadsheets() {
+    await convertFiles(
+      spreadsheetPaths,
+      spreadsheetOutputFormat,
+      convertSpreadsheetFiles,
+      "Choose spreadsheet files and an output folder before converting.",
+    );
+  }
+
+  async function convertFiles(
+    inputPaths: string[],
+    outputFormat: string,
+    convert: typeof convertImageFiles,
+    missingMessage: string,
+  ) {
     if (inputPaths.length === 0 || !outputDirectory) {
-      setError("Choose image files and an output folder before converting.");
+      setError(missingMessage);
       return;
     }
 
     setIsConverting(true);
     setError(null);
     try {
-      const response = await convertImageFiles({
+      const response = await convert({
         inputPaths,
         outputDirectory,
         outputFormat,
@@ -71,21 +110,20 @@ export function ConverterView() {
     }
   }
 
+  function resetResults() {
+    setResults([]);
+    setError(null);
+  }
+
   return (
     <section className="content-panel" aria-labelledby="converter-heading">
       <p className="eyebrow">Converter</p>
       <h2 id="converter-heading">Convert files locally.</h2>
-      <p>
-        Start with image conversion. More local backends will appear as they are
-        connected.
-      </p>
+      <p>Convert images and simple spreadsheets without uploading files.</p>
 
       <div className="workflow-card converter-card">
-        <h3>Image conversion</h3>
+        <h3>Shared output settings</h3>
         <div className="action-row">
-          <button type="button" className="primary-button" onClick={chooseImages}>
-            Choose images
-          </button>
           <button
             type="button"
             className="secondary-button"
@@ -94,21 +132,7 @@ export function ConverterView() {
             Choose output folder
           </button>
         </div>
-
         <div className="converter-options">
-          <label>
-            Output format
-            <select
-              value={outputFormat}
-              onChange={(event) => setOutputFormat(event.currentTarget.value)}
-            >
-              <option value="png">PNG</option>
-              <option value="jpg">JPG</option>
-              <option value="webp">WebP</option>
-              <option value="bmp">BMP</option>
-              <option value="tiff">TIFF</option>
-            </select>
-          </label>
           <label>
             If output exists
             <select
@@ -121,18 +145,70 @@ export function ConverterView() {
             </select>
           </label>
         </div>
+        {outputDirectory ? <p className="selected-path">{outputDirectory}</p> : null}
+      </div>
 
+      <div className="workflow-card converter-card">
+        <h3>Image conversion</h3>
+        <div className="action-row">
+          <button type="button" className="primary-button" onClick={chooseImages}>
+            Choose images
+          </button>
+        </div>
+        <div className="converter-options">
+          <label>
+            Output format
+            <select
+              value={imageOutputFormat}
+              onChange={(event) => setImageOutputFormat(event.currentTarget.value)}
+            >
+              <option value="png">PNG</option>
+              <option value="jpg">JPG</option>
+              <option value="webp">WebP</option>
+              <option value="bmp">BMP</option>
+              <option value="tiff">TIFF</option>
+            </select>
+          </label>
+        </div>
         <button
           type="button"
           className="primary-button"
           onClick={convertImages}
-          disabled={inputPaths.length === 0 || !outputDirectory || isConverting}
+          disabled={imagePaths.length === 0 || !outputDirectory || isConverting}
         >
           {isConverting ? "Converting..." : "Convert images"}
         </button>
+        <p>{imagePaths.length} image file(s) selected.</p>
+      </div>
 
-        <p>{inputPaths.length} image file(s) selected.</p>
-        {outputDirectory ? <p className="selected-path">{outputDirectory}</p> : null}
+      <div className="workflow-card converter-card">
+        <h3>Spreadsheet conversion</h3>
+        <div className="action-row">
+          <button type="button" className="primary-button" onClick={chooseSpreadsheets}>
+            Choose CSV/XLSX files
+          </button>
+        </div>
+        <div className="converter-options">
+          <label>
+            Output format
+            <select
+              value={spreadsheetOutputFormat}
+              onChange={(event) => setSpreadsheetOutputFormat(event.currentTarget.value)}
+            >
+              <option value="xlsx">CSV to XLSX</option>
+              <option value="csv">XLSX to CSV</option>
+            </select>
+          </label>
+        </div>
+        <button
+          type="button"
+          className="primary-button"
+          onClick={convertSpreadsheets}
+          disabled={spreadsheetPaths.length === 0 || !outputDirectory || isConverting}
+        >
+          {isConverting ? "Converting..." : "Convert spreadsheets"}
+        </button>
+        <p>{spreadsheetPaths.length} spreadsheet file(s) selected.</p>
       </div>
 
       {error ? <p className="inline-error">{error}</p> : null}

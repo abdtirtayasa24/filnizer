@@ -30,6 +30,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::app::get_app_status,
             commands::converter::convert_image_files,
+            commands::converter::convert_spreadsheet_files,
             commands::converter::plan_conversion_outputs_command,
             commands::organizer::apply_organizer_plan_command,
             commands::organizer::find_duplicate_files,

@@ -184,6 +184,12 @@ export function convertImageFiles(
   return invokeCommand<ConversionResponse>("convert_image_files", { request });
 }
 
+export function convertSpreadsheetFiles(
+  request: ConversionRequest,
+): Promise<ConversionResponse> {
+  return invokeCommand<ConversionResponse>("convert_spreadsheet_files", { request });
+}
+
 export function formatCommandError(error: unknown): string {
   if (typeof error === "string") {
     return error;
