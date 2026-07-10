@@ -1,1 +1,13 @@
-{"default":{"identifier":"default","description":"Default capability for the main Filnizer window.","local":true,"windows":["main"],"permissions":[]}}
+{
+    "default": {
+        "identifier": "default",
+        "description": "Default capability for the main Filnizer window.",
+        "local": true,
+        "windows": [
+            "main"
+        ],
+        "permissions": [
+            "dialog:allow-open"
+        ]
+    }
+}
