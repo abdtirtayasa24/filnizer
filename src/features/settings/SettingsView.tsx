@@ -1,18 +1,26 @@
 import { useEffect, useState } from "react";
 
-import { AppStatus, formatCommandError, getAppStatus } from "../../lib/tauri-client";
+import {
+  AppStatus,
+  ToolStatus,
+  formatCommandError,
+  getAppStatus,
+  getConverterToolStatus,
+} from "../../lib/tauri-client";
 
 export function SettingsView() {
   const [status, setStatus] = useState<AppStatus | null>(null);
+  const [tools, setTools] = useState<ToolStatus[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    getAppStatus()
-      .then((appStatus) => {
+    Promise.all([getAppStatus(), getConverterToolStatus()])
+      .then(([appStatus, toolStatus]) => {
         if (isMounted) {
           setStatus(appStatus);
+          setTools(toolStatus);
           setError(null);
         }
       })
@@ -32,8 +40,8 @@ export function SettingsView() {
       <p className="eyebrow">Settings</p>
       <h2 id="settings-heading">Keep everything local.</h2>
       <p>
-        Filnizer is designed for offline workflows. Helper tool status and
-        default behavior controls will be added here.
+        Filnizer is designed for offline workflows. Helper status is checked
+        locally from the app folder.
       </p>
 
       <div className="status-grid">
@@ -51,6 +59,13 @@ export function SettingsView() {
           <span>Version</span>
           <strong>{status?.version ?? "Checking..."}</strong>
         </div>
+        {tools.map((tool) => (
+          <div className="status-card" key={tool.name}>
+            <span>{tool.name}</span>
+            <strong>{tool.available ? "Available" : "Missing"}</strong>
+            <small>{tool.path ?? tool.guidance}</small>
+          </div>
+        ))}
       </div>
 
       {error ? <p className="inline-error">Status unavailable: {error}</p> : null}

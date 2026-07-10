@@ -117,6 +117,13 @@ export type ConversionResponse = {
   results: ConversionFileResult[];
 };
 
+export type ToolStatus = {
+  name: string;
+  available: boolean;
+  path: string | null;
+  guidance: string | null;
+};
+
 export async function invokeCommand<T>(
   command: string,
   args?: Record<string, unknown>,
@@ -188,6 +195,16 @@ export function convertSpreadsheetFiles(
   request: ConversionRequest,
 ): Promise<ConversionResponse> {
   return invokeCommand<ConversionResponse>("convert_spreadsheet_files", { request });
+}
+
+export function convertMediaFiles(
+  request: ConversionRequest,
+): Promise<ConversionResponse> {
+  return invokeCommand<ConversionResponse>("convert_media_files", { request });
+}
+
+export function getConverterToolStatus(): Promise<ToolStatus[]> {
+  return invokeCommand<ToolStatus[]>("get_converter_tool_status");
 }
 
 export function formatCommandError(error: unknown): string {

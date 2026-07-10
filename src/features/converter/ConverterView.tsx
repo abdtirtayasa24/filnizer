@@ -5,6 +5,7 @@ import {
   ConflictPolicy,
   ConversionFileResult,
   convertImageFiles,
+  convertMediaFiles,
   convertSpreadsheetFiles,
   formatCommandError,
 } from "../../lib/tauri-client";
@@ -12,9 +13,11 @@ import {
 export function ConverterView() {
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [spreadsheetPaths, setSpreadsheetPaths] = useState<string[]>([]);
+  const [mediaPaths, setMediaPaths] = useState<string[]>([]);
   const [outputDirectory, setOutputDirectory] = useState<string | null>(null);
   const [imageOutputFormat, setImageOutputFormat] = useState("png");
   const [spreadsheetOutputFormat, setSpreadsheetOutputFormat] = useState("xlsx");
+  const [mediaOutputFormat, setMediaOutputFormat] = useState("mp3");
   const [conflictPolicy, setConflictPolicy] = useState<ConflictPolicy>("rename");
   const [results, setResults] = useState<ConversionFileResult[]>([]);
   const [isConverting, setIsConverting] = useState(false);
@@ -40,6 +43,14 @@ export function ConverterView() {
     const selected = await chooseFiles("Spreadsheets", ["csv", "xlsx"]);
     if (selected) {
       setSpreadsheetPaths(selected);
+      resetResults();
+    }
+  }
+
+  async function chooseMedia() {
+    const selected = await chooseFiles("Media", ["mp4", "mov", "mkv", "webm", "mp3", "wav", "flac", "aac", "m4a"]);
+    if (selected) {
+      setMediaPaths(selected);
       resetResults();
     }
   }
@@ -79,6 +90,15 @@ export function ConverterView() {
       spreadsheetOutputFormat,
       convertSpreadsheetFiles,
       "Choose spreadsheet files and an output folder before converting.",
+    );
+  }
+
+  async function convertMedia() {
+    await convertFiles(
+      mediaPaths,
+      mediaOutputFormat,
+      convertMediaFiles,
+      "Choose media files and an output folder before converting.",
     );
   }
 
@@ -209,6 +229,39 @@ export function ConverterView() {
           {isConverting ? "Converting..." : "Convert spreadsheets"}
         </button>
         <p>{spreadsheetPaths.length} spreadsheet file(s) selected.</p>
+      </div>
+
+      <div className="workflow-card converter-card">
+        <h3>Media conversion</h3>
+        <p>Requires app-local FFmpeg. Missing FFmpeg is reported without downloading anything.</p>
+        <div className="action-row">
+          <button type="button" className="primary-button" onClick={chooseMedia}>
+            Choose media files
+          </button>
+        </div>
+        <div className="converter-options">
+          <label>
+            Output format
+            <select
+              value={mediaOutputFormat}
+              onChange={(event) => setMediaOutputFormat(event.currentTarget.value)}
+            >
+              <option value="mp3">MP3</option>
+              <option value="aac">AAC</option>
+              <option value="mp4">MP4</option>
+              <option value="mkv">MKV</option>
+            </select>
+          </label>
+        </div>
+        <button
+          type="button"
+          className="primary-button"
+          onClick={convertMedia}
+          disabled={mediaPaths.length === 0 || !outputDirectory || isConverting}
+        >
+          {isConverting ? "Converting..." : "Convert media"}
+        </button>
+        <p>{mediaPaths.length} media file(s) selected.</p>
       </div>
 
       {error ? <p className="inline-error">{error}</p> : null}

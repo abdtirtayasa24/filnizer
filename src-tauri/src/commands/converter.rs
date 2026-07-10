@@ -4,12 +4,14 @@ use uuid::Uuid;
 
 use crate::commands::{CommandResponse, CommandResult};
 use crate::converter::image::convert_images;
+use crate::converter::media::convert_media;
 use crate::converter::planner::{conversion_job_status, plan_conversion_outputs};
 use crate::converter::spreadsheet::convert_spreadsheets;
 use crate::db::jobs_repository::JobsRepository;
 use crate::db::operation_repository::OperationRepository;
 use crate::domain::conversion::{ConversionFileResult, ConversionRequest};
 use crate::domain::jobs::{JobKind, JobSummary};
+use crate::tools::ffmpeg::{ffmpeg_status, ToolStatus};
 use crate::AppState;
 
 #[derive(Debug, Serialize)]
@@ -17,6 +19,19 @@ use crate::AppState;
 pub struct PlanConversionOutputsResponse {
     pub job_id: String,
     pub results: Vec<ConversionFileResult>,
+}
+
+#[tauri::command]
+pub async fn get_converter_tool_status() -> CommandResult<Vec<ToolStatus>> {
+    Ok(CommandResponse::new(vec![ffmpeg_status()]))
+}
+
+#[tauri::command]
+pub async fn convert_media_files(
+    request: ConversionRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<PlanConversionOutputsResponse> {
+    run_conversion_job("Media conversion", request, state, convert_media).await
 }
 
 #[tauri::command]
