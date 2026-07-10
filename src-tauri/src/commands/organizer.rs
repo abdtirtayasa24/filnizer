@@ -11,7 +11,9 @@ use crate::organizer::apply::{
     applied_plan, apply_organizer_plan, ApplyFileStatus, ApplyOrganizerPlanRequest,
     ApplyOrganizerPlanResponse,
 };
-use crate::organizer::duplicates::{find_duplicates, FindDuplicatesRequest, FindDuplicatesResponse};
+use crate::organizer::duplicates::{
+    find_duplicates, FindDuplicatesRequest, FindDuplicatesResponse,
+};
 use crate::organizer::planner::{preview_organizer_plan, PreviewOrganizerPlanRequest};
 use crate::organizer::rules::{OrganizerRule, OrganizerRulesRepository, SaveOrganizerRulesRequest};
 use crate::organizer::scan::{scan_folders, ScanRequest};
@@ -171,7 +173,10 @@ pub async fn apply_organizer_plan_command(
         .filter(|result| result.status == ApplyFileStatus::Success)
         .count() as u64;
     let failed_or_skipped = response.results.iter().any(|result| {
-        matches!(result.status, ApplyFileStatus::Failed | ApplyFileStatus::Skipped)
+        matches!(
+            result.status,
+            ApplyFileStatus::Failed | ApplyFileStatus::Skipped
+        )
     });
     let status = if successful_files == total_files {
         JobStatus::Completed
@@ -206,9 +211,7 @@ pub async fn preview_organizer_plan_command(
 }
 
 #[tauri::command]
-pub async fn list_organizer_rules(
-    state: State<'_, AppState>,
-) -> CommandResult<Vec<OrganizerRule>> {
+pub async fn list_organizer_rules(state: State<'_, AppState>) -> CommandResult<Vec<OrganizerRule>> {
     let repository = OrganizerRulesRepository::new(state.database.clone());
     Ok(CommandResponse::new(repository.list_rules()?))
 }
@@ -219,7 +222,9 @@ pub async fn save_organizer_rules(
     state: State<'_, AppState>,
 ) -> CommandResult<Vec<OrganizerRule>> {
     let repository = OrganizerRulesRepository::new(state.database.clone());
-    Ok(CommandResponse::new(repository.replace_rules(&request.rules)?))
+    Ok(CommandResponse::new(
+        repository.replace_rules(&request.rules)?,
+    ))
 }
 
 fn current_unix_ms() -> i64 {

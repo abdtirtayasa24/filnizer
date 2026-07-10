@@ -83,7 +83,12 @@ fn undo_single_operation(
 
     if let Some(parent) = original_path.parent() {
         if let Err(error) = fs::create_dir_all(parent) {
-            return failed(operation_id, current_path, original_path, &error.to_string());
+            return failed(
+                operation_id,
+                current_path,
+                original_path,
+                &error.to_string(),
+            );
         }
     }
 
@@ -95,7 +100,12 @@ fn undo_single_operation(
             status: ApplyFileStatus::Success,
             message: None,
         },
-        Err(error) => failed(operation_id, current_path, original_path, &error.to_string()),
+        Err(error) => failed(
+            operation_id,
+            current_path,
+            original_path,
+            &error.to_string(),
+        ),
     }
 }
 
@@ -114,7 +124,12 @@ fn unsafe_refusal(
     }
 }
 
-fn failed(operation_id: &str, current_path: &Path, original_path: &Path, message: &str) -> ApplyFileResult {
+fn failed(
+    operation_id: &str,
+    current_path: &Path,
+    original_path: &Path,
+    message: &str,
+) -> ApplyFileResult {
     ApplyFileResult {
         operation_id: operation_id.to_string(),
         source_path: current_path.to_string_lossy().to_string(),
@@ -128,7 +143,9 @@ fn failed(operation_id: &str, current_path: &Path, original_path: &Path, message
 mod tests {
     use std::fs;
 
-    use crate::domain::operations::{ConflictPolicy, OperationKind, OperationPlan, OperationPlanStatus, PlannedOperation};
+    use crate::domain::operations::{
+        ConflictPolicy, OperationKind, OperationPlan, OperationPlanStatus, PlannedOperation,
+    };
     use crate::organizer::apply::ApplyFileStatus;
     use crate::organizer::undo::undo_organizer_plan;
 
@@ -140,7 +157,10 @@ mod tests {
         fs::create_dir_all(organized.parent().unwrap()).unwrap();
         fs::write(&organized, b"hello").unwrap();
 
-        let response = undo_organizer_plan(&plan(original.to_string_lossy(), organized.to_string_lossy()));
+        let response = undo_organizer_plan(&plan(
+            original.to_string_lossy(),
+            organized.to_string_lossy(),
+        ));
 
         assert_eq!(response.results[0].status, ApplyFileStatus::Success);
         assert_eq!(fs::read(&original).unwrap(), b"hello");
@@ -156,14 +176,20 @@ mod tests {
         fs::write(&original, b"new user data").unwrap();
         fs::write(&organized, b"organized").unwrap();
 
-        let response = undo_organizer_plan(&plan(original.to_string_lossy(), organized.to_string_lossy()));
+        let response = undo_organizer_plan(&plan(
+            original.to_string_lossy(),
+            organized.to_string_lossy(),
+        ));
 
         assert_eq!(response.results[0].status, ApplyFileStatus::Skipped);
         assert_eq!(fs::read(&original).unwrap(), b"new user data");
         assert_eq!(fs::read(&organized).unwrap(), b"organized");
     }
 
-    fn plan(source_path: std::borrow::Cow<'_, str>, target_path: std::borrow::Cow<'_, str>) -> OperationPlan {
+    fn plan(
+        source_path: std::borrow::Cow<'_, str>,
+        target_path: std::borrow::Cow<'_, str>,
+    ) -> OperationPlan {
         OperationPlan {
             id: "plan-1".to_string(),
             job_id: None,
