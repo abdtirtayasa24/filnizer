@@ -21,7 +21,11 @@ pub fn convert_pdfs(request: &ConversionRequest) -> Result<Vec<ConversionFileRes
         return Ok(results);
     };
 
-    let output_format = request.output_format.trim().trim_start_matches('.').to_ascii_lowercase();
+    let output_format = request
+        .output_format
+        .trim()
+        .trim_start_matches('.')
+        .to_ascii_lowercase();
 
     for result in &mut results {
         if result.status != ConversionFileStatus::Pending {
