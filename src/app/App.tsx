@@ -1,6 +1,27 @@
-const sections = ["Organizer", "Converter", "Jobs", "Settings"];
+import { useState } from "react";
+
+import { ConverterView } from "../features/converter/ConverterView";
+import { JobsView } from "../features/jobs/JobsView";
+import { OrganizerView } from "../features/organizer/OrganizerView";
+import { SettingsView } from "../features/settings/SettingsView";
+
+type SectionId = "organizer" | "converter" | "jobs" | "settings";
+
+type Section = {
+  id: SectionId;
+  label: string;
+};
+
+const sections: Section[] = [
+  { id: "organizer", label: "Organizer" },
+  { id: "converter", label: "Converter" },
+  { id: "jobs", label: "Jobs / History" },
+  { id: "settings", label: "Settings" },
+];
 
 export function App() {
+  const [activeSection, setActiveSection] = useState<SectionId>("organizer");
+
   return (
     <main className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
@@ -16,25 +37,33 @@ export function App() {
 
         <nav>
           {sections.map((section) => (
-            <button key={section} type="button" className="nav-item">
-              {section}
+            <button
+              key={section.id}
+              type="button"
+              className="nav-item"
+              aria-current={activeSection === section.id ? "page" : undefined}
+              onClick={() => setActiveSection(section.id)}
+            >
+              {section.label}
             </button>
           ))}
         </nav>
       </aside>
 
-      <section className="hero" aria-labelledby="welcome-heading">
-        <p className="eyebrow">Windows portable utility</p>
-        <h2 id="welcome-heading">Organize and convert files locally.</h2>
-        <p>
-          Filnizer will help clean messy folders, detect duplicates, and convert
-          files without relying on online tools.
-        </p>
-        <div className="status-card" role="status">
-          Foundation scaffold is ready. Core organizer and converter workflows
-          will be added incrementally.
-        </div>
-      </section>
+      {renderSection(activeSection)}
     </main>
   );
+}
+
+function renderSection(section: SectionId) {
+  switch (section) {
+    case "organizer":
+      return <OrganizerView />;
+    case "converter":
+      return <ConverterView />;
+    case "jobs":
+      return <JobsView />;
+    case "settings":
+      return <SettingsView />;
+  }
 }
