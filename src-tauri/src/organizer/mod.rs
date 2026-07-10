@@ -1,3 +1,4 @@
+pub mod apply;
 pub mod categories;
 pub mod planner;
 pub mod rename;

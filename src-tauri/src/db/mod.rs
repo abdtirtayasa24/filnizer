@@ -8,6 +8,7 @@ use tauri::{AppHandle, Manager};
 use crate::errors::AppError;
 
 pub mod jobs_repository;
+pub mod operation_repository;
 pub mod settings_repository;
 
 #[derive(Clone)]

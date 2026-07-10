@@ -4,8 +4,13 @@ use uuid::Uuid;
 
 use crate::commands::{CommandResponse, CommandResult};
 use crate::db::jobs_repository::JobsRepository;
+use crate::db::operation_repository::OperationRepository;
 use crate::domain::jobs::{JobKind, JobStatus, JobSummary};
 use crate::domain::operations::OperationPlan;
+use crate::organizer::apply::{
+    applied_plan, apply_organizer_plan, ApplyFileStatus, ApplyOrganizerPlanRequest,
+    ApplyOrganizerPlanResponse,
+};
 use crate::organizer::planner::{preview_organizer_plan, PreviewOrganizerPlanRequest};
 use crate::organizer::rules::{OrganizerRule, OrganizerRulesRepository, SaveOrganizerRulesRequest};
 use crate::organizer::scan::{scan_folders, ScanRequest};
@@ -75,6 +80,49 @@ pub async fn start_organizer_scan(
             Err(error)
         }
     }
+}
+
+#[tauri::command]
+pub async fn apply_organizer_plan_command(
+    request: ApplyOrganizerPlanRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<ApplyOrganizerPlanResponse> {
+    let now = current_unix_ms();
+    let jobs = JobsRepository::new(state.database.clone());
+    let operations = OperationRepository::new(state.database.clone());
+    let response = apply_organizer_plan(&request.plan);
+    let total_files = response.results.len() as u64;
+    let successful_files = response
+        .results
+        .iter()
+        .filter(|result| result.status == ApplyFileStatus::Success)
+        .count() as u64;
+    let failed_or_skipped = response.results.iter().any(|result| {
+        matches!(result.status, ApplyFileStatus::Failed | ApplyFileStatus::Skipped)
+    });
+    let status = if successful_files == total_files {
+        JobStatus::Completed
+    } else if successful_files > 0 || failed_or_skipped {
+        JobStatus::PartiallyCompleted
+    } else {
+        JobStatus::Failed
+    };
+
+    jobs.insert_job(&JobSummary {
+        id: response.job_id.clone(),
+        kind: JobKind::OrganizerApply,
+        status,
+        name: "Apply organizer plan".to_string(),
+        total_files,
+        completed_files: successful_files,
+        created_at_unix_ms: now,
+        updated_at_unix_ms: now,
+        error_message: None,
+    })?;
+    operations.save_plan(&applied_plan(&request.plan, response.job_id.clone()))?;
+    operations.save_file_results(&response.job_id, &response.results)?;
+
+    Ok(CommandResponse::new(response))
 }
 
 #[tauri::command]
