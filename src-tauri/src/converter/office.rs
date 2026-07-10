@@ -77,12 +77,14 @@ fn convert_single_office(
         ));
     }
 
-    let generated = output_dir.join(
-        Path::new(input_path)
-            .file_stem()
-            .and_then(|value| value.to_str())
-            .unwrap_or("converted"),
-    ).with_extension("pdf");
+    let generated = output_dir
+        .join(
+            Path::new(input_path)
+                .file_stem()
+                .and_then(|value| value.to_str())
+                .unwrap_or("converted"),
+        )
+        .with_extension("pdf");
 
     if generated != output_path && generated.exists() {
         if output_path.exists() {

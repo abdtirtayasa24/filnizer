@@ -72,7 +72,13 @@ pub async fn convert_spreadsheet_files(
     request: ConversionRequest,
     state: State<'_, AppState>,
 ) -> CommandResult<PlanConversionOutputsResponse> {
-    run_conversion_job("Spreadsheet conversion", request, state, convert_spreadsheets).await
+    run_conversion_job(
+        "Spreadsheet conversion",
+        request,
+        state,
+        convert_spreadsheets,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -158,7 +164,10 @@ async fn run_conversion_job(
     })?;
     OperationRepository::new(state.database.clone()).save_conversion_results(&job_id, &results)?;
 
-    Ok(CommandResponse::new(PlanConversionOutputsResponse { job_id, results }))
+    Ok(CommandResponse::new(PlanConversionOutputsResponse {
+        job_id,
+        results,
+    }))
 }
 
 fn current_unix_ms() -> i64 {

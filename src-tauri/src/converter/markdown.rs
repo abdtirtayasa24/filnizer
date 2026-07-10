@@ -7,7 +7,9 @@ use crate::converter::planner::plan_conversion_outputs;
 use crate::domain::conversion::{ConversionFileResult, ConversionFileStatus, ConversionRequest};
 use crate::errors::AppError;
 
-pub fn convert_markdown(request: &ConversionRequest) -> Result<Vec<ConversionFileResult>, AppError> {
+pub fn convert_markdown(
+    request: &ConversionRequest,
+) -> Result<Vec<ConversionFileResult>, AppError> {
     if request.output_format.trim().trim_start_matches('.') != "pdf" {
         return Err(AppError::validation("Markdown output format must be PDF"));
     }

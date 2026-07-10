@@ -53,7 +53,10 @@ fn convert_single_spreadsheet(
         .and_then(|value| value.to_str())
         .unwrap_or_default()
         .to_ascii_lowercase();
-    let output_format = output_format.trim().trim_start_matches('.').to_ascii_lowercase();
+    let output_format = output_format
+        .trim()
+        .trim_start_matches('.')
+        .to_ascii_lowercase();
 
     match (input_extension.as_str(), output_format.as_str()) {
         ("csv", "xlsx") => csv_to_xlsx(input_path, output_path),
@@ -86,8 +89,8 @@ fn csv_to_xlsx(input_path: &str, output_path: &str) -> Result<(), AppError> {
 }
 
 fn xlsx_to_csv(input_path: &str, output_path: &str) -> Result<(), AppError> {
-    let mut workbook = open_workbook_auto(input_path)
-        .map_err(|error| AppError::Unexpected(error.to_string()))?;
+    let mut workbook =
+        open_workbook_auto(input_path).map_err(|error| AppError::Unexpected(error.to_string()))?;
     let sheet_name = workbook
         .sheet_names()
         .first()

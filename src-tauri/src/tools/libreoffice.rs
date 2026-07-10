@@ -53,7 +53,11 @@ fn common_install_locations() -> Vec<PathBuf> {
 }
 
 fn find_libreoffice_on_path() -> Option<PathBuf> {
-    let executable = if cfg!(windows) { "soffice.exe" } else { "soffice" };
+    let executable = if cfg!(windows) {
+        "soffice.exe"
+    } else {
+        "soffice"
+    };
     std::env::var_os("PATH").and_then(|paths| {
         std::env::split_paths(&paths)
             .map(|path| path.join(executable))
@@ -72,7 +76,11 @@ mod tests {
         let temp_dir = tempfile::tempdir().unwrap();
         let program = temp_dir.path().join("program");
         fs::create_dir(&program).unwrap();
-        let soffice = program.join(if cfg!(windows) { "soffice.exe" } else { "soffice" });
+        let soffice = program.join(if cfg!(windows) {
+            "soffice.exe"
+        } else {
+            "soffice"
+        });
         fs::write(&soffice, b"placeholder").unwrap();
 
         assert_eq!(find_libreoffice_in(temp_dir.path()), Some(soffice));

@@ -50,7 +50,11 @@ mod tests {
         let temp_dir = tempfile::tempdir().unwrap();
         let binaries = temp_dir.path().join("binaries");
         fs::create_dir(&binaries).unwrap();
-        let ffmpeg = binaries.join(if cfg!(windows) { "ffmpeg.exe" } else { "ffmpeg" });
+        let ffmpeg = binaries.join(if cfg!(windows) {
+            "ffmpeg.exe"
+        } else {
+            "ffmpeg"
+        });
         fs::write(&ffmpeg, b"placeholder").unwrap();
 
         assert_eq!(find_ffmpeg_in(temp_dir.path()), Some(ffmpeg));
