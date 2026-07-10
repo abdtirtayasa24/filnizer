@@ -18,6 +18,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  overflow-y: auto;
 }
 
 button {
@@ -31,7 +32,11 @@ button {
 }
 
 .sidebar {
+  position: sticky;
+  top: 0;
   display: flex;
+  height: 100vh;
+  overflow: hidden;
   flex-direction: column;
   gap: 32px;
   padding: 28px;
@@ -45,15 +50,11 @@ button {
   gap: 14px;
 }
 
-.brand-mark {
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
+.brand-logo {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
   border-radius: 16px;
-  color: #ffffff;
-  background: #2f7d68;
-  font-weight: 800;
 }
 
 .brand h1 {
@@ -301,6 +302,9 @@ nav {
   }
 
   .sidebar {
+    position: static;
+    height: auto;
+    overflow: visible;
     border-right: 0;
     border-bottom: 1px solid #eadaca;
   }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import logoUrl from "../../src-tauri/icons/192x192.png";
 import { ConverterView } from "../features/converter/ConverterView";
 import { JobsView } from "../features/jobs/JobsView";
 import { OrganizerView } from "../features/organizer/OrganizerView";
@@ -26,9 +27,7 @@ export function App() {
     <main className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            F
-          </span>
+          <img className="brand-logo" src={logoUrl} alt="" aria-hidden="true" />
           <div>
             <h1>Filnizer</h1>
             <p>Offline file helper</p>
