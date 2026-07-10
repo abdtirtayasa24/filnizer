@@ -96,6 +96,27 @@ export type DuplicateSet = {
   paths: string[];
 };
 
+export type ConflictPolicy = "skip" | "rename" | "overwrite";
+
+export type ConversionFileResult = {
+  inputPath: string;
+  outputPath: string | null;
+  status: "pending" | "running" | "completed" | "failed" | "skipped";
+  message: string | null;
+};
+
+export type ConversionRequest = {
+  inputPaths: string[];
+  outputDirectory: string;
+  outputFormat: string;
+  conflictPolicy: ConflictPolicy;
+};
+
+export type ConversionResponse = {
+  jobId: string;
+  results: ConversionFileResult[];
+};
+
 export async function invokeCommand<T>(
   command: string,
   args?: Record<string, unknown>,
@@ -155,6 +176,12 @@ export function findDuplicateFiles(files: FileEntry[]): Promise<{ sets: Duplicat
   return invokeCommand<{ sets: DuplicateSet[] }>("find_duplicate_files", {
     request: { files },
   });
+}
+
+export function convertImageFiles(
+  request: ConversionRequest,
+): Promise<ConversionResponse> {
+  return invokeCommand<ConversionResponse>("convert_image_files", { request });
 }
 
 export function formatCommandError(error: unknown): string {

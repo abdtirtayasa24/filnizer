@@ -211,8 +211,28 @@ nav {
   margin-top: 14px;
 }
 
+.converter-card {
+  max-width: 720px;
+  margin-top: 32px;
+}
+
+.converter-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.converter-options label {
+  display: grid;
+  gap: 8px;
+  color: #344054;
+  font-weight: 700;
+}
+
 .rule-form input,
-.rule-form select {
+.rule-form select,
+.converter-options select {
   min-width: 0;
   padding: 10px 12px;
   border: 1px solid #d0d5dd;
@@ -315,6 +335,7 @@ nav {
 
   .status-grid,
   .rule-form,
+  .converter-options,
   .workflow-grid {
     grid-template-columns: 1fr;
   }
