@@ -6,6 +6,7 @@ import {
   ConversionFileResult,
   convertImageFiles,
   convertMediaFiles,
+  convertPdfFiles,
   convertSpreadsheetFiles,
   formatCommandError,
 } from "../../lib/tauri-client";
@@ -14,10 +15,12 @@ export function ConverterView() {
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [spreadsheetPaths, setSpreadsheetPaths] = useState<string[]>([]);
   const [mediaPaths, setMediaPaths] = useState<string[]>([]);
+  const [pdfPaths, setPdfPaths] = useState<string[]>([]);
   const [outputDirectory, setOutputDirectory] = useState<string | null>(null);
   const [imageOutputFormat, setImageOutputFormat] = useState("png");
   const [spreadsheetOutputFormat, setSpreadsheetOutputFormat] = useState("xlsx");
   const [mediaOutputFormat, setMediaOutputFormat] = useState("mp3");
+  const [pdfOutputFormat, setPdfOutputFormat] = useState("txt");
   const [conflictPolicy, setConflictPolicy] = useState<ConflictPolicy>("rename");
   const [results, setResults] = useState<ConversionFileResult[]>([]);
   const [isConverting, setIsConverting] = useState(false);
@@ -51,6 +54,14 @@ export function ConverterView() {
     const selected = await chooseFiles("Media", ["mp4", "mov", "mkv", "webm", "mp3", "wav", "flac", "aac", "m4a"]);
     if (selected) {
       setMediaPaths(selected);
+      resetResults();
+    }
+  }
+
+  async function choosePdfs() {
+    const selected = await chooseFiles("PDFs", ["pdf"]);
+    if (selected) {
+      setPdfPaths(selected);
       resetResults();
     }
   }
@@ -99,6 +110,15 @@ export function ConverterView() {
       mediaOutputFormat,
       convertMediaFiles,
       "Choose media files and an output folder before converting.",
+    );
+  }
+
+  async function convertPdfs() {
+    await convertFiles(
+      pdfPaths,
+      pdfOutputFormat,
+      convertPdfFiles,
+      "Choose PDF files and an output folder before converting.",
     );
   }
 
@@ -262,6 +282,37 @@ export function ConverterView() {
           {isConverting ? "Converting..." : "Convert media"}
         </button>
         <p>{mediaPaths.length} media file(s) selected.</p>
+      </div>
+
+      <div className="workflow-card converter-card">
+        <h3>PDF conversion</h3>
+        <p>Requires app-local Pdfium. Missing Pdfium is reported without downloading anything.</p>
+        <div className="action-row">
+          <button type="button" className="primary-button" onClick={choosePdfs}>
+            Choose PDFs
+          </button>
+        </div>
+        <div className="converter-options">
+          <label>
+            Output format
+            <select
+              value={pdfOutputFormat}
+              onChange={(event) => setPdfOutputFormat(event.currentTarget.value)}
+            >
+              <option value="txt">Text</option>
+              <option value="png">PNG images</option>
+            </select>
+          </label>
+        </div>
+        <button
+          type="button"
+          className="primary-button"
+          onClick={convertPdfs}
+          disabled={pdfPaths.length === 0 || !outputDirectory || isConverting}
+        >
+          {isConverting ? "Converting..." : "Convert PDFs"}
+        </button>
+        <p>{pdfPaths.length} PDF file(s) selected.</p>
       </div>
 
       {error ? <p className="inline-error">{error}</p> : null}

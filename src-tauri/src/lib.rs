@@ -32,6 +32,7 @@ pub fn run() {
             commands::app::get_app_status,
             commands::converter::convert_image_files,
             commands::converter::convert_media_files,
+            commands::converter::convert_pdf_files,
             commands::converter::convert_spreadsheet_files,
             commands::converter::get_converter_tool_status,
             commands::converter::plan_conversion_outputs_command,

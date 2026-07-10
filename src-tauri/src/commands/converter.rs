@@ -5,6 +5,7 @@ use uuid::Uuid;
 use crate::commands::{CommandResponse, CommandResult};
 use crate::converter::image::convert_images;
 use crate::converter::media::convert_media;
+use crate::converter::pdf::convert_pdfs;
 use crate::converter::planner::{conversion_job_status, plan_conversion_outputs};
 use crate::converter::spreadsheet::convert_spreadsheets;
 use crate::db::jobs_repository::JobsRepository;
@@ -12,6 +13,7 @@ use crate::db::operation_repository::OperationRepository;
 use crate::domain::conversion::{ConversionFileResult, ConversionRequest};
 use crate::domain::jobs::{JobKind, JobSummary};
 use crate::tools::ffmpeg::{ffmpeg_status, ToolStatus};
+use crate::tools::pdfium::pdfium_status;
 use crate::AppState;
 
 #[derive(Debug, Serialize)]
@@ -23,7 +25,15 @@ pub struct PlanConversionOutputsResponse {
 
 #[tauri::command]
 pub async fn get_converter_tool_status() -> CommandResult<Vec<ToolStatus>> {
-    Ok(CommandResponse::new(vec![ffmpeg_status()]))
+    Ok(CommandResponse::new(vec![ffmpeg_status(), pdfium_status()]))
+}
+
+#[tauri::command]
+pub async fn convert_pdf_files(
+    request: ConversionRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<PlanConversionOutputsResponse> {
+    run_conversion_job("PDF conversion", request, state, convert_pdfs).await
 }
 
 #[tauri::command]
