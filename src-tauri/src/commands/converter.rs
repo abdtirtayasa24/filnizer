@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 use crate::commands::{CommandResponse, CommandResult};
 use crate::converter::image::convert_images;
+use crate::converter::markdown::convert_markdown;
 use crate::converter::media::convert_media;
 use crate::converter::pdf::convert_pdfs;
 use crate::converter::planner::{conversion_job_status, plan_conversion_outputs};
@@ -26,6 +27,14 @@ pub struct PlanConversionOutputsResponse {
 #[tauri::command]
 pub async fn get_converter_tool_status() -> CommandResult<Vec<ToolStatus>> {
     Ok(CommandResponse::new(vec![ffmpeg_status(), pdfium_status()]))
+}
+
+#[tauri::command]
+pub async fn convert_markdown_files(
+    request: ConversionRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<PlanConversionOutputsResponse> {
+    run_conversion_job("Markdown conversion", request, state, convert_markdown).await
 }
 
 #[tauri::command]

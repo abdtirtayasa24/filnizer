@@ -203,6 +203,12 @@ export function convertMediaFiles(
   return invokeCommand<ConversionResponse>("convert_media_files", { request });
 }
 
+export function convertMarkdownFiles(
+  request: ConversionRequest,
+): Promise<ConversionResponse> {
+  return invokeCommand<ConversionResponse>("convert_markdown_files", { request });
+}
+
 export function convertPdfFiles(
   request: ConversionRequest,
 ): Promise<ConversionResponse> {

@@ -5,6 +5,7 @@ import {
   ConflictPolicy,
   ConversionFileResult,
   convertImageFiles,
+  convertMarkdownFiles,
   convertMediaFiles,
   convertPdfFiles,
   convertSpreadsheetFiles,
@@ -16,6 +17,7 @@ export function ConverterView() {
   const [spreadsheetPaths, setSpreadsheetPaths] = useState<string[]>([]);
   const [mediaPaths, setMediaPaths] = useState<string[]>([]);
   const [pdfPaths, setPdfPaths] = useState<string[]>([]);
+  const [markdownPaths, setMarkdownPaths] = useState<string[]>([]);
   const [outputDirectory, setOutputDirectory] = useState<string | null>(null);
   const [imageOutputFormat, setImageOutputFormat] = useState("png");
   const [spreadsheetOutputFormat, setSpreadsheetOutputFormat] = useState("xlsx");
@@ -62,6 +64,14 @@ export function ConverterView() {
     const selected = await chooseFiles("PDFs", ["pdf"]);
     if (selected) {
       setPdfPaths(selected);
+      resetResults();
+    }
+  }
+
+  async function chooseMarkdown() {
+    const selected = await chooseFiles("Markdown", ["md", "markdown"]);
+    if (selected) {
+      setMarkdownPaths(selected);
       resetResults();
     }
   }
@@ -119,6 +129,15 @@ export function ConverterView() {
       pdfOutputFormat,
       convertPdfFiles,
       "Choose PDF files and an output folder before converting.",
+    );
+  }
+
+  async function convertMarkdown() {
+    await convertFiles(
+      markdownPaths,
+      "pdf",
+      convertMarkdownFiles,
+      "Choose Markdown files and an output folder before converting.",
     );
   }
 
@@ -313,6 +332,25 @@ export function ConverterView() {
           {isConverting ? "Converting..." : "Convert PDFs"}
         </button>
         <p>{pdfPaths.length} PDF file(s) selected.</p>
+      </div>
+
+      <div className="workflow-card converter-card">
+        <h3>Markdown to PDF</h3>
+        <p>Remote URLs are rejected so conversion stays offline.</p>
+        <div className="action-row">
+          <button type="button" className="primary-button" onClick={chooseMarkdown}>
+            Choose Markdown
+          </button>
+        </div>
+        <button
+          type="button"
+          className="primary-button"
+          onClick={convertMarkdown}
+          disabled={markdownPaths.length === 0 || !outputDirectory || isConverting}
+        >
+          {isConverting ? "Converting..." : "Convert Markdown"}
+        </button>
+        <p>{markdownPaths.length} Markdown file(s) selected.</p>
       </div>
 
       {error ? <p className="inline-error">{error}</p> : null}
