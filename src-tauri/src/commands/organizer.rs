@@ -14,6 +14,9 @@ use crate::organizer::apply::{
 use crate::organizer::planner::{preview_organizer_plan, PreviewOrganizerPlanRequest};
 use crate::organizer::rules::{OrganizerRule, OrganizerRulesRepository, SaveOrganizerRulesRequest};
 use crate::organizer::scan::{scan_folders, ScanRequest};
+use crate::organizer::undo::{
+    undo_organizer_plan, undone_plan, UndoOrganizerPlanRequest, UndoOrganizerPlanResponse,
+};
 use crate::AppState;
 
 #[derive(Debug, Serialize)]
@@ -80,6 +83,46 @@ pub async fn start_organizer_scan(
             Err(error)
         }
     }
+}
+
+#[tauri::command]
+pub async fn undo_organizer_plan_command(
+    request: UndoOrganizerPlanRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<UndoOrganizerPlanResponse> {
+    let now = current_unix_ms();
+    let jobs = JobsRepository::new(state.database.clone());
+    let operations = OperationRepository::new(state.database.clone());
+    let response = undo_organizer_plan(&request.plan);
+    let total_files = response.results.len() as u64;
+    let successful_files = response
+        .results
+        .iter()
+        .filter(|result| result.status == ApplyFileStatus::Success)
+        .count() as u64;
+    let status = if successful_files == total_files {
+        JobStatus::Completed
+    } else if successful_files > 0 || !response.results.is_empty() {
+        JobStatus::PartiallyCompleted
+    } else {
+        JobStatus::Failed
+    };
+
+    jobs.insert_job(&JobSummary {
+        id: response.job_id.clone(),
+        kind: JobKind::OrganizerUndo,
+        status,
+        name: "Undo organizer plan".to_string(),
+        total_files,
+        completed_files: successful_files,
+        created_at_unix_ms: now,
+        updated_at_unix_ms: now,
+        error_message: None,
+    })?;
+    operations.save_plan(&undone_plan(&request.plan, response.job_id.clone()))?;
+    operations.save_file_results(&response.job_id, &response.results)?;
+
+    Ok(CommandResponse::new(response))
 }
 
 #[tauri::command]

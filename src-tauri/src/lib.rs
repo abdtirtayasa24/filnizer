@@ -32,7 +32,8 @@ pub fn run() {
             commands::organizer::list_organizer_rules,
             commands::organizer::preview_organizer_plan_command,
             commands::organizer::save_organizer_rules,
-            commands::organizer::start_organizer_scan
+            commands::organizer::start_organizer_scan,
+            commands::organizer::undo_organizer_plan_command
         ])
         .run(tauri::generate_context!())
         .expect("error while running Filnizer");
