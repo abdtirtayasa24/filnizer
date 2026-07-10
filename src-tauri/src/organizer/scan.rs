@@ -5,8 +5,10 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
 use walkdir::WalkDir;
 
-use crate::domain::files::{FileCategory, FileEntry, HashStatus};
+use crate::domain::files::{FileEntry, HashStatus};
 use crate::errors::AppError;
+use crate::organizer::categories::infer_category;
+use crate::organizer::rules::OrganizerRule;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -34,6 +36,7 @@ pub fn scan_folders(
     request: &ScanRequest,
     job_id: &str,
     app: Option<&AppHandle>,
+    rules: &[OrganizerRule],
 ) -> Result<ScanResult, AppError> {
     validate_scan_request(request)?;
 
@@ -54,7 +57,7 @@ pub fn scan_folders(
                 continue;
             }
 
-            let file_entry = file_entry_from_path(path)?;
+            let file_entry = file_entry_from_path(path, rules)?;
             files.push(file_entry);
 
             if let Some(app) = app {
@@ -98,7 +101,7 @@ fn validate_scan_request(request: &ScanRequest) -> Result<(), AppError> {
     Ok(())
 }
 
-fn file_entry_from_path(path: &Path) -> Result<FileEntry, AppError> {
+fn file_entry_from_path(path: &Path, rules: &[OrganizerRule]) -> Result<FileEntry, AppError> {
     let metadata = fs::metadata(path)?;
     let modified_unix_ms = metadata
         .modified()
@@ -115,13 +118,15 @@ fn file_entry_from_path(path: &Path) -> Result<FileEntry, AppError> {
         .and_then(|value| value.to_str())
         .map(|value| value.to_ascii_lowercase());
 
+    let category = infer_category(&name, extension.as_deref(), rules);
+
     Ok(FileEntry {
         path: path.to_string_lossy().to_string(),
         name,
         extension,
         size_bytes: metadata.len(),
         modified_unix_ms,
-        category: FileCategory::Other,
+        category,
         hash_status: HashStatus::NotRequested,
     })
 }
@@ -153,6 +158,7 @@ mod tests {
             },
             "job-1",
             None,
+            &[],
         )
         .unwrap();
 
@@ -176,6 +182,7 @@ mod tests {
             },
             "job-1",
             None,
+            &[],
         )
         .unwrap();
 

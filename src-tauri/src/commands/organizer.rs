@@ -5,6 +5,7 @@ use uuid::Uuid;
 use crate::commands::{CommandResponse, CommandResult};
 use crate::db::jobs_repository::JobsRepository;
 use crate::domain::jobs::{JobKind, JobStatus, JobSummary};
+use crate::organizer::rules::{OrganizerRule, OrganizerRulesRepository, SaveOrganizerRulesRequest};
 use crate::organizer::scan::{scan_folders, ScanRequest};
 use crate::AppState;
 
@@ -37,11 +38,12 @@ pub async fn start_organizer_scan(
         error_message: None,
     })?;
 
+    let rules = OrganizerRulesRepository::new(state.database.clone()).list_rules()?;
     let scan_request = request.clone();
     let scan_job_id = job_id.clone();
     let scan_app = app.clone();
     let scan_result = tokio::task::spawn_blocking(move || {
-        scan_folders(&scan_request, &scan_job_id, Some(&scan_app))
+        scan_folders(&scan_request, &scan_job_id, Some(&scan_app), &rules)
     })
     .await
     .map_err(|error| crate::errors::AppError::Unexpected(error.to_string()))?;
@@ -71,6 +73,23 @@ pub async fn start_organizer_scan(
             Err(error)
         }
     }
+}
+
+#[tauri::command]
+pub async fn list_organizer_rules(
+    state: State<'_, AppState>,
+) -> CommandResult<Vec<OrganizerRule>> {
+    let repository = OrganizerRulesRepository::new(state.database.clone());
+    Ok(CommandResponse::new(repository.list_rules()?))
+}
+
+#[tauri::command]
+pub async fn save_organizer_rules(
+    request: SaveOrganizerRulesRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<Vec<OrganizerRule>> {
+    let repository = OrganizerRulesRepository::new(state.database.clone());
+    Ok(CommandResponse::new(repository.replace_rules(&request.rules)?))
 }
 
 fn current_unix_ms() -> i64 {

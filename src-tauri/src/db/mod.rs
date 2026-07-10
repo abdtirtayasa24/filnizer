@@ -48,6 +48,7 @@ impl AppDatabase {
     fn run_migrations(&self) -> Result<(), AppError> {
         self.with_connection(|connection| {
             connection.execute_batch(include_str!("../../migrations/001_initial.sql"))?;
+            connection.execute_batch(include_str!("../../migrations/002_organizer_rules.sql"))?;
             Ok(())
         })
     }

@@ -10,14 +10,38 @@ export type AppStatus = {
   runtimeNetworkEnabled: boolean;
 };
 
+export type FileCategory =
+  | "images"
+  | "documents"
+  | "pdfs"
+  | "spreadsheets"
+  | "presentations"
+  | "videos"
+  | "audio"
+  | "archives"
+  | "code"
+  | "executables"
+  | "other";
+
 export type FileEntry = {
   path: string;
   name: string;
   extension: string | null;
   sizeBytes: number;
   modifiedUnixMs: number | null;
-  category: string;
+  category: FileCategory;
   hashStatus: unknown;
+};
+
+export type OrganizerRule = {
+  id: string;
+  kind: "extension" | "filenameContains";
+  value: string;
+  category: FileCategory;
+};
+
+export type OrganizerRuleInput = Omit<OrganizerRule, "id"> & {
+  id?: string;
 };
 
 export type StartScanRequest = {
@@ -53,6 +77,18 @@ export function startOrganizerScan(
   request: StartScanRequest,
 ): Promise<StartScanResponse> {
   return invokeCommand<StartScanResponse>("start_organizer_scan", { request });
+}
+
+export function listOrganizerRules(): Promise<OrganizerRule[]> {
+  return invokeCommand<OrganizerRule[]>("list_organizer_rules");
+}
+
+export function saveOrganizerRules(
+  rules: OrganizerRuleInput[],
+): Promise<OrganizerRule[]> {
+  return invokeCommand<OrganizerRule[]>("save_organizer_rules", {
+    request: { rules },
+  });
 }
 
 export function formatCommandError(error: unknown): string {
