@@ -7,6 +7,7 @@ import {
   convertImageFiles,
   convertMarkdownFiles,
   convertMediaFiles,
+  convertOfficeFiles,
   convertPdfFiles,
   convertSpreadsheetFiles,
   formatCommandError,
@@ -18,6 +19,7 @@ export function ConverterView() {
   const [mediaPaths, setMediaPaths] = useState<string[]>([]);
   const [pdfPaths, setPdfPaths] = useState<string[]>([]);
   const [markdownPaths, setMarkdownPaths] = useState<string[]>([]);
+  const [officePaths, setOfficePaths] = useState<string[]>([]);
   const [outputDirectory, setOutputDirectory] = useState<string | null>(null);
   const [imageOutputFormat, setImageOutputFormat] = useState("png");
   const [spreadsheetOutputFormat, setSpreadsheetOutputFormat] = useState("xlsx");
@@ -72,6 +74,14 @@ export function ConverterView() {
     const selected = await chooseFiles("Markdown", ["md", "markdown"]);
     if (selected) {
       setMarkdownPaths(selected);
+      resetResults();
+    }
+  }
+
+  async function chooseOffice() {
+    const selected = await chooseFiles("Office documents", ["doc", "docx", "odt"]);
+    if (selected) {
+      setOfficePaths(selected);
       resetResults();
     }
   }
@@ -138,6 +148,15 @@ export function ConverterView() {
       "pdf",
       convertMarkdownFiles,
       "Choose Markdown files and an output folder before converting.",
+    );
+  }
+
+  async function convertOffice() {
+    await convertFiles(
+      officePaths,
+      "pdf",
+      convertOfficeFiles,
+      "Choose Office documents and an output folder before converting.",
     );
   }
 
@@ -351,6 +370,25 @@ export function ConverterView() {
           {isConverting ? "Converting..." : "Convert Markdown"}
         </button>
         <p>{markdownPaths.length} Markdown file(s) selected.</p>
+      </div>
+
+      <div className="workflow-card converter-card">
+        <h3>Office to PDF</h3>
+        <p>Requires a local LibreOffice installation. Filnizer only detects it; it does not download it.</p>
+        <div className="action-row">
+          <button type="button" className="primary-button" onClick={chooseOffice}>
+            Choose Office documents
+          </button>
+        </div>
+        <button
+          type="button"
+          className="primary-button"
+          onClick={convertOffice}
+          disabled={officePaths.length === 0 || !outputDirectory || isConverting}
+        >
+          {isConverting ? "Converting..." : "Convert Office files"}
+        </button>
+        <p>{officePaths.length} Office document(s) selected.</p>
       </div>
 
       {error ? <p className="inline-error">{error}</p> : null}

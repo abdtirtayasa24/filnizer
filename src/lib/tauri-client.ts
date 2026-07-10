@@ -215,6 +215,12 @@ export function convertPdfFiles(
   return invokeCommand<ConversionResponse>("convert_pdf_files", { request });
 }
 
+export function convertOfficeFiles(
+  request: ConversionRequest,
+): Promise<ConversionResponse> {
+  return invokeCommand<ConversionResponse>("convert_office_files", { request });
+}
+
 export function getConverterToolStatus(): Promise<ToolStatus[]> {
   return invokeCommand<ToolStatus[]>("get_converter_tool_status");
 }

@@ -6,6 +6,7 @@ use crate::commands::{CommandResponse, CommandResult};
 use crate::converter::image::convert_images;
 use crate::converter::markdown::convert_markdown;
 use crate::converter::media::convert_media;
+use crate::converter::office::convert_office;
 use crate::converter::pdf::convert_pdfs;
 use crate::converter::planner::{conversion_job_status, plan_conversion_outputs};
 use crate::converter::spreadsheet::convert_spreadsheets;
@@ -14,6 +15,7 @@ use crate::db::operation_repository::OperationRepository;
 use crate::domain::conversion::{ConversionFileResult, ConversionRequest};
 use crate::domain::jobs::{JobKind, JobSummary};
 use crate::tools::ffmpeg::{ffmpeg_status, ToolStatus};
+use crate::tools::libreoffice::libreoffice_status;
 use crate::tools::pdfium::pdfium_status;
 use crate::AppState;
 
@@ -26,7 +28,11 @@ pub struct PlanConversionOutputsResponse {
 
 #[tauri::command]
 pub async fn get_converter_tool_status() -> CommandResult<Vec<ToolStatus>> {
-    Ok(CommandResponse::new(vec![ffmpeg_status(), pdfium_status()]))
+    Ok(CommandResponse::new(vec![
+        ffmpeg_status(),
+        pdfium_status(),
+        libreoffice_status(),
+    ]))
 }
 
 #[tauri::command]
@@ -35,6 +41,14 @@ pub async fn convert_markdown_files(
     state: State<'_, AppState>,
 ) -> CommandResult<PlanConversionOutputsResponse> {
     run_conversion_job("Markdown conversion", request, state, convert_markdown).await
+}
+
+#[tauri::command]
+pub async fn convert_office_files(
+    request: ConversionRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<PlanConversionOutputsResponse> {
+    run_conversion_job("Office conversion", request, state, convert_office).await
 }
 
 #[tauri::command]

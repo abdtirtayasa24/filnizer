@@ -33,6 +33,7 @@ pub fn run() {
             commands::converter::convert_image_files,
             commands::converter::convert_markdown_files,
             commands::converter::convert_media_files,
+            commands::converter::convert_office_files,
             commands::converter::convert_pdf_files,
             commands::converter::convert_spreadsheet_files,
             commands::converter::get_converter_tool_status,
