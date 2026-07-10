@@ -3,6 +3,7 @@ use serde::Serialize;
 use crate::errors::AppError;
 
 pub mod app;
+pub mod converter;
 pub mod organizer;
 
 pub type CommandResult<T> = Result<CommandResponse<T>, AppError>;

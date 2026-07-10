@@ -1,6 +1,7 @@
 use rusqlite::params;
 
 use crate::db::AppDatabase;
+use crate::domain::conversion::ConversionFileResult;
 use crate::domain::operations::OperationPlan;
 use crate::errors::AppError;
 use crate::organizer::apply::ApplyFileResult;
@@ -46,6 +47,32 @@ impl OperationRepository {
                         job_id,
                         result.source_path,
                         result.target_path,
+                        serde_json::to_string(&result.status)
+                            .map_err(|error| AppError::Unexpected(error.to_string()))?,
+                        result.message,
+                        current_unix_ms(),
+                    ],
+                )?;
+            }
+            Ok(())
+        })
+    }
+
+    pub fn save_conversion_results(
+        &self,
+        job_id: &str,
+        results: &[ConversionFileResult],
+    ) -> Result<(), AppError> {
+        self.database.with_connection(|connection| {
+            for result in results {
+                connection.execute(
+                    "INSERT INTO file_results
+                     (job_id, source_path, target_path, status, message, updated_at_unix_ms)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+                    params![
+                        job_id,
+                        result.input_path,
+                        result.output_path,
                         serde_json::to_string(&result.status)
                             .map_err(|error| AppError::Unexpected(error.to_string()))?,
                         result.message,
