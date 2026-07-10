@@ -2,31 +2,31 @@
 
 ## Phase 1: Foundation
 
-- [ ] Task 1: Scaffold Tauri 2 + React + TypeScript project
+- [x] Task 1: Scaffold Tauri 2 + React + TypeScript project
   - Acceptance: App opens in Tauri dev mode with a minimal Filnizer window; generated files follow standard Tauri layout; no runtime network/updater feature is enabled.
   - Verify: `npm run tauri dev` launches; `npm run build` passes.
   - Files: `package.json`, `src/`, `src-tauri/`, `index.html`, `vite.config.*`
   - Dependencies: None
 
-- [ ] Task 2: Pin Rust/JS dependencies and baseline quality commands
+- [x] Task 2: Pin Rust/JS dependencies and baseline quality commands
   - Acceptance: `rust-toolchain.toml` pins Rust 1.88+; `Cargo.toml` includes approved crate pins/features; package scripts include build/test/lint/package placeholders.
   - Verify: `cargo metadata --manifest-path src-tauri/Cargo.toml` succeeds; `npm run build` succeeds.
   - Files: `rust-toolchain.toml`, `src-tauri/Cargo.toml`, `src-tauri/build.rs`, `package.json`
   - Dependencies: Task 1
 
-- [ ] Task 3: Define Rust app errors, domain DTOs, and command response pattern
+- [x] Task 3: Define Rust app errors, domain DTOs, and command response pattern
   - Acceptance: Shared Rust request/response types exist for jobs, file entries, operation plans, settings, and conversion requests; errors serialize to frontend-safe messages.
   - Verify: `cargo test --manifest-path src-tauri/Cargo.toml` passes.
   - Files: `src-tauri/src/errors.rs`, `src-tauri/src/domain/*`, `src-tauri/src/commands/*`
   - Dependencies: Task 2
 
-- [ ] Task 4: Add SQLite initialization, migrations, and settings/job repositories
+- [x] Task 4: Add SQLite initialization, migrations, and settings/job repositories
   - Acceptance: Fresh app creates local SQLite DB; migrations create settings, jobs, operation plans, and file results tables; repository tests use temp DB.
   - Verify: `cargo test --manifest-path src-tauri/Cargo.toml db` passes.
   - Files: `src-tauri/migrations/*`, `src-tauri/src/db/*`, `src-tauri/src/settings/*`
   - Dependencies: Task 3
 
-- [ ] Task 5: Add frontend shell, navigation, and command-client convention
+- [x] Task 5: Add frontend shell, navigation, and command-client convention
   - Acceptance: UI has Organizer, Converter, Jobs/History, Settings sections; command wrappers are centralized and typed.
   - Verify: `npm run build` passes; manual navigation check in dev mode.
   - Files: `src/app/*`, `src/features/*`, `src/lib/tauri-client.ts`, `src/styles/*`
@@ -34,9 +34,9 @@
 
 ## Checkpoint: Foundation
 
-- [ ] Run `npm run build`
-- [ ] Run `cargo test --manifest-path src-tauri/Cargo.toml`
-- [ ] Run `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings`
+- [x] Run `npm run build`
+- [x] Run `cargo test --manifest-path src-tauri/Cargo.toml`
+- [x] Run `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings`
 - [ ] Human review before organizer implementation
 
 ## Phase 2: Organizer
