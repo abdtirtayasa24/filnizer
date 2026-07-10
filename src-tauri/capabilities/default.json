@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Default capability for the main Filnizer window.",
   "windows": ["main"],
-  "permissions": []
+  "permissions": ["dialog:allow-open"]
 }

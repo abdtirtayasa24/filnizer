@@ -10,6 +10,33 @@ export type AppStatus = {
   runtimeNetworkEnabled: boolean;
 };
 
+export type FileEntry = {
+  path: string;
+  name: string;
+  extension: string | null;
+  sizeBytes: number;
+  modifiedUnixMs: number | null;
+  category: string;
+  hashStatus: unknown;
+};
+
+export type StartScanRequest = {
+  roots: string[];
+  recursive: boolean;
+  includeHidden: boolean;
+};
+
+export type StartScanResponse = {
+  jobId: string;
+  files: FileEntry[];
+};
+
+export type ScanProgressEvent = {
+  jobId: string;
+  currentPath: string;
+  scannedFiles: number;
+};
+
 export async function invokeCommand<T>(
   command: string,
   args?: Record<string, unknown>,
@@ -20,6 +47,12 @@ export async function invokeCommand<T>(
 
 export function getAppStatus(): Promise<AppStatus> {
   return invokeCommand<AppStatus>("get_app_status");
+}
+
+export function startOrganizerScan(
+  request: StartScanRequest,
+): Promise<StartScanResponse> {
+  return invokeCommand<StartScanResponse>("start_organizer_scan", { request });
 }
 
 export function formatCommandError(error: unknown): string {

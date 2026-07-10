@@ -123,10 +123,57 @@ nav {
   line-height: 1.7;
 }
 
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.primary-button,
+.secondary-button {
+  padding: 12px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primary-button {
+  border: 0;
+  color: #ffffff;
+  background: #2f7d68;
+}
+
+.secondary-button {
+  border: 1px solid #cfe5dd;
+  color: #1f5144;
+  background: #effaf6;
+}
+
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  color: #344054;
+}
+
+.selected-path,
+.progress-text {
+  max-width: 620px;
+  overflow-wrap: anywhere;
+  color: #526070;
+}
+
 .empty-card,
 .status-card {
   max-width: 620px;
-  margin-top: 36px;
+  margin-top: 24px;
   padding: 18px 20px;
   border: 1px solid #cfe5dd;
   border-radius: 18px;

@@ -2,6 +2,7 @@ pub mod commands;
 pub mod db;
 pub mod domain;
 pub mod errors;
+pub mod organizer;
 
 use db::AppDatabase;
 use tauri::Manager;
@@ -25,7 +26,10 @@ pub fn run() {
             app.manage(AppState::new(database));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![commands::app::get_app_status])
+        .invoke_handler(tauri::generate_handler![
+            commands::app::get_app_status,
+            commands::organizer::start_organizer_scan
+        ])
         .run(tauri::generate_context!())
         .expect("error while running Filnizer");
 }

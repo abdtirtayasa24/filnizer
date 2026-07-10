@@ -1,7 +1,7 @@
 use rusqlite::params;
 
 use crate::db::AppDatabase;
-use crate::domain::jobs::JobSummary;
+use crate::domain::jobs::{JobStatus, JobSummary};
 use crate::errors::AppError;
 
 pub struct JobsRepository {
@@ -35,6 +35,40 @@ impl JobsRepository {
                     job.created_at_unix_ms,
                     job.updated_at_unix_ms,
                     job.error_message,
+                ],
+            )?;
+            Ok(())
+        })
+    }
+
+    pub fn update_job_progress(
+        &self,
+        id: &str,
+        status: JobStatus,
+        total_files: u64,
+        completed_files: u64,
+        error_message: Option<String>,
+    ) -> Result<(), AppError> {
+        let status = serde_json::to_string(&status)
+            .map_err(|error| AppError::Unexpected(error.to_string()))?;
+        let updated_at = current_unix_ms();
+
+        self.database.with_connection(|connection| {
+            connection.execute(
+                "UPDATE jobs
+                 SET status = ?2,
+                     total_files = ?3,
+                     completed_files = ?4,
+                     updated_at_unix_ms = ?5,
+                     error_message = ?6
+                 WHERE id = ?1",
+                params![
+                    id,
+                    status,
+                    total_files as i64,
+                    completed_files as i64,
+                    updated_at,
+                    error_message,
                 ],
             )?;
             Ok(())
@@ -96,6 +130,13 @@ impl JobsRepository {
             }
         })
     }
+}
+
+fn current_unix_ms() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|duration| duration.as_millis() as i64)
+        .unwrap_or_default()
 }
 
 #[cfg(test)]
