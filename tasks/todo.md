@@ -41,43 +41,43 @@
 
 ## Phase 2: Organizer
 
-- [ ] Task 6: Implement scan job with folder selection and progress events
+- [x] Task 6: Implement scan job with folder selection and progress events
   - Acceptance: User-selected folder scan returns file metadata with recursive option; progress events include current file/count; scan does not block UI.
   - Verify: Rust tests with temp directory; manual scan of fixture folder.
   - Files: `src-tauri/src/organizer/scan.rs`, `src-tauri/src/jobs/*`, `src-tauri/src/commands/organizer.rs`, `src/features/organizer/*`
   - Dependencies: Tasks 4, 5
 
-- [ ] Task 7: Implement category inference and simple custom rule storage
+- [x] Task 7: Implement category inference and simple custom rule storage
   - Acceptance: Default categories work by extension; users can store extension/pattern rules locally; rules affect scan/preview output.
   - Verify: Unit tests for category inference and rule precedence.
   - Files: `src-tauri/src/organizer/categories.rs`, `src-tauri/src/organizer/rules.rs`, `src-tauri/src/settings/*`, `src/features/organizer/*`
   - Dependencies: Task 6
 
-- [ ] Task 8: Implement organizer preview plan for move/rename operations
+- [x] Task 8: Implement organizer preview plan for move/rename operations
   - Acceptance: Preview produces deterministic target paths, filename cleanup, conflict suffixes, and no filesystem mutations.
   - Verify: Unit tests for rename normalization, conflict handling, and target folder plans.
   - Files: `src-tauri/src/organizer/planner.rs`, `src-tauri/src/organizer/rename.rs`, `src-tauri/src/fs/*`, `tests/fixtures/organizer/*`
   - Dependencies: Task 7
 
-- [ ] Task 9: Implement apply plan with persisted per-file results
+- [x] Task 9: Implement apply plan with persisted per-file results
   - Acceptance: Move/rename plan applies with per-file success/failure; partial failures are persisted; no overwrite occurs unless explicitly selected.
   - Verify: Integration tests using temp directories.
   - Files: `src-tauri/src/organizer/apply.rs`, `src-tauri/src/fs/*`, `src-tauri/src/db/*`, `src-tauri/src/commands/organizer.rs`
   - Dependencies: Task 8
 
-- [ ] Task 10: Implement safe undo for move/rename operations
+- [x] Task 10: Implement safe undo for move/rename operations
   - Acceptance: Applied move/rename plans can be undone when source/destination state is unchanged; unsafe undo is refused with explanation.
   - Verify: Integration tests for successful undo and refused unsafe undo.
   - Files: `src-tauri/src/organizer/undo.rs`, `src-tauri/src/db/*`, `src-tauri/src/fs/*`, `src/features/jobs/*`
   - Dependencies: Task 9
 
-- [ ] Task 11: Implement duplicate detection using size grouping and BLAKE3
+- [x] Task 11: Implement duplicate detection using size grouping and BLAKE3
   - Acceptance: Duplicate sets are detected by size grouping then BLAKE3 hashing; app never deletes duplicates automatically.
   - Verify: Unit/integration tests with duplicate fixtures.
   - Files: `src-tauri/src/organizer/duplicates.rs`, `src-tauri/src/jobs/*`, `src-tauri/src/commands/organizer.rs`, `tests/fixtures/organizer/duplicates/*`
   - Dependencies: Task 6
 
-- [ ] Task 12: Implement organizer UI workflows end-to-end
+- [x] Task 12: Implement organizer UI workflows end-to-end
   - Acceptance: UI supports scan, custom rules, preview, apply, undo, duplicate detection, and clear safety confirmations.
   - Verify: `npm run build`; manual fixture workflow.
   - Files: `src/features/organizer/*`, `src/features/jobs/*`, `src/components/*`, `src/lib/*`
@@ -85,8 +85,8 @@
 
 ## Checkpoint: Organizer
 
-- [ ] Run Rust organizer tests
-- [ ] Run frontend build
+- [x] Run Rust organizer tests
+- [x] Run frontend build
 - [ ] Manual fixture: scan → preview → apply → undo
 - [ ] Manual fixture: duplicate detection
 - [ ] Human review before converter implementation
