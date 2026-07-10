@@ -11,6 +11,7 @@ use crate::organizer::apply::{
     applied_plan, apply_organizer_plan, ApplyFileStatus, ApplyOrganizerPlanRequest,
     ApplyOrganizerPlanResponse,
 };
+use crate::organizer::duplicates::{find_duplicates, FindDuplicatesRequest, FindDuplicatesResponse};
 use crate::organizer::planner::{preview_organizer_plan, PreviewOrganizerPlanRequest};
 use crate::organizer::rules::{OrganizerRule, OrganizerRulesRepository, SaveOrganizerRulesRequest};
 use crate::organizer::scan::{scan_folders, ScanRequest};
@@ -83,6 +84,35 @@ pub async fn start_organizer_scan(
             Err(error)
         }
     }
+}
+
+#[tauri::command]
+pub async fn find_duplicate_files(
+    request: FindDuplicatesRequest,
+    state: State<'_, AppState>,
+) -> CommandResult<FindDuplicatesResponse> {
+    let job_id = Uuid::now_v7().to_string();
+    let now = current_unix_ms();
+    let jobs = JobsRepository::new(state.database.clone());
+    let total_files = request.files.len() as u64;
+    let files = request.files.clone();
+    let sets = tokio::task::spawn_blocking(move || find_duplicates(&files))
+        .await
+        .map_err(|error| crate::errors::AppError::Unexpected(error.to_string()))??;
+
+    jobs.insert_job(&JobSummary {
+        id: job_id,
+        kind: JobKind::DuplicateAnalysis,
+        status: JobStatus::Completed,
+        name: "Duplicate analysis".to_string(),
+        total_files,
+        completed_files: total_files,
+        created_at_unix_ms: now,
+        updated_at_unix_ms: now,
+        error_message: None,
+    })?;
+
+    Ok(CommandResponse::new(FindDuplicatesResponse { sets }))
 }
 
 #[tauri::command]

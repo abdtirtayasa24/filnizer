@@ -1,5 +1,6 @@
 pub mod apply;
 pub mod categories;
+pub mod duplicates;
 pub mod planner;
 pub mod rename;
 pub mod rules;
