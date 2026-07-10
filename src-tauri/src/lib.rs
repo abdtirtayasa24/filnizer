@@ -29,6 +29,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::app::get_app_status,
             commands::organizer::list_organizer_rules,
+            commands::organizer::preview_organizer_plan_command,
             commands::organizer::save_organizer_rules,
             commands::organizer::start_organizer_scan
         ])

@@ -5,6 +5,8 @@ use uuid::Uuid;
 use crate::commands::{CommandResponse, CommandResult};
 use crate::db::jobs_repository::JobsRepository;
 use crate::domain::jobs::{JobKind, JobStatus, JobSummary};
+use crate::domain::operations::OperationPlan;
+use crate::organizer::planner::{preview_organizer_plan, PreviewOrganizerPlanRequest};
 use crate::organizer::rules::{OrganizerRule, OrganizerRulesRepository, SaveOrganizerRulesRequest};
 use crate::organizer::scan::{scan_folders, ScanRequest};
 use crate::AppState;
@@ -73,6 +75,13 @@ pub async fn start_organizer_scan(
             Err(error)
         }
     }
+}
+
+#[tauri::command]
+pub async fn preview_organizer_plan_command(
+    request: PreviewOrganizerPlanRequest,
+) -> CommandResult<OperationPlan> {
+    Ok(CommandResponse::new(preview_organizer_plan(&request)?))
 }
 
 #[tauri::command]
