@@ -144,7 +144,7 @@
 
 ## Phase 4: Jobs, Settings, Packaging, Release Readiness
 
-- [ ] Task 20: Complete Jobs/History UI with persisted operation details
+- [x] Task 20: Complete Jobs/History UI with persisted operation details
   - Acceptance: Jobs/History displays scans, organizer applies/undo, duplicate analysis, and conversions with per-file details.
   - Verify: Manual workflow creates visible history entries; frontend build passes.
   - Files: `src/features/jobs/*`, `src-tauri/src/jobs/*`, `src-tauri/src/commands/jobs.rs`, `src-tauri/src/db/*`
