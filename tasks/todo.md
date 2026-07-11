@@ -174,7 +174,7 @@
   - Files: `docs/release/signing.md`, `.github/workflows/*` or CI docs, `package.json`
   - Dependencies: Task 22
 
-- [ ] Task 25: Add release smoke-test checklist and license inventory
+- [x] Task 25: Add release smoke-test checklist and license inventory
   - Acceptance: Release checklist covers portable launch, offline behavior, organizer, conversions, helper detection, signing, and bundled binary licenses.
   - Verify: Static review; checklist can be followed on Windows 10+.
   - Files: `docs/release/checklist.md`, `docs/release/licenses.md`, `README.md`
