@@ -117,6 +117,13 @@ export type ConversionResponse = {
   results: ConversionFileResult[];
 };
 
+export type AppSettings = {
+  defaultOutputDirectory: string | null;
+  defaultConflictPolicy: ConflictPolicy;
+  historyRetentionDays: number | null;
+  showPrivacyNote: boolean;
+};
+
 export type JobKind =
   | "organizerScan"
   | "organizerApply"
@@ -265,6 +272,16 @@ export function convertOfficeFiles(
 
 export function getConverterToolStatus(): Promise<ToolStatus[]> {
   return invokeCommand<ToolStatus[]>("get_converter_tool_status");
+}
+
+export function getAppSettings(): Promise<AppSettings> {
+  return invokeCommand<AppSettings>("get_app_settings");
+}
+
+export function saveAppSettings(settings: AppSettings): Promise<AppSettings> {
+  return invokeCommand<AppSettings>("save_app_settings", {
+    request: { settings },
+  });
 }
 
 export function listJobs(limit = 50): Promise<JobSummary[]> {

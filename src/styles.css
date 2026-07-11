@@ -574,6 +574,91 @@ nav {
   font-weight: 750;
 }
 
+.settings-layout {
+  display: grid;
+  width: min(100%, 980px);
+  grid-template-columns: minmax(420px, 1.2fr) minmax(240px, 0.8fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.settings-card {
+  margin-top: 0;
+}
+
+.settings-card-wide {
+  min-width: 0;
+}
+
+.settings-form-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.settings-form-grid label:not(.checkbox-row) {
+  display: grid;
+  gap: 6px;
+  color: #344054;
+  font-size: 0.83rem;
+  font-weight: 750;
+}
+
+.settings-form-grid select {
+  min-width: 0;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid #c9c0b4;
+  border-radius: 10px;
+  color: var(--ink);
+  background: linear-gradient(180deg, #ffffff, #f6f1ea);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.74) inset;
+}
+
+.setting-inline-action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-checkbox-row {
+  margin-top: 0;
+}
+
+.privacy-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border-color: rgba(32, 111, 95, 0.2);
+  background:
+    radial-gradient(circle at top right, rgba(32, 111, 95, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(229, 241, 237, 0.86));
+}
+
+.privacy-card strong {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  padding: 7px 10px;
+  border: 1px solid rgba(32, 111, 95, 0.18);
+  border-radius: 999px;
+  color: var(--accent-strong);
+  background: rgba(239, 250, 246, 0.9);
+  font-size: 0.82rem;
+}
+
+.settings-success {
+  color: var(--accent-strong) !important;
+  font-weight: 750;
+}
+
+.settings-status-grid {
+  width: min(100%, 980px);
+}
+
 .history-toolbar {
   display: flex;
   align-items: center;
@@ -816,7 +901,8 @@ nav {
 @media (max-width: 1120px) {
   .workflow-grid,
   .status-grid,
-  .job-history-grid {
+  .job-history-grid,
+  .settings-layout {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -860,7 +946,9 @@ nav {
   .converter-options,
   .workflow-grid,
   .job-history-grid,
-  .job-metrics {
+  .job-metrics,
+  .settings-layout,
+  .settings-form-grid {
     grid-template-columns: 1fr;
   }
 
