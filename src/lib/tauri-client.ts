@@ -117,6 +117,48 @@ export type ConversionResponse = {
   results: ConversionFileResult[];
 };
 
+export type JobKind =
+  | "organizerScan"
+  | "organizerApply"
+  | "organizerUndo"
+  | "duplicateAnalysis"
+  | "conversion";
+
+export type JobStatus =
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed"
+  | "canceled"
+  | "partiallyCompleted";
+
+export type JobSummary = {
+  id: string;
+  kind: JobKind;
+  status: JobStatus;
+  name: string;
+  totalFiles: number;
+  completedFiles: number;
+  createdAtUnixMs: number;
+  updatedAtUnixMs: number;
+  errorMessage: string | null;
+};
+
+export type JobFileResult = {
+  id: number;
+  jobId: string;
+  sourcePath: string;
+  targetPath: string | null;
+  status: string;
+  message: string | null;
+  updatedAtUnixMs: number;
+};
+
+export type JobDetailsResponse = {
+  job: JobSummary;
+  fileResults: JobFileResult[];
+};
+
 export type ToolStatus = {
   name: string;
   available: boolean;
@@ -223,6 +265,16 @@ export function convertOfficeFiles(
 
 export function getConverterToolStatus(): Promise<ToolStatus[]> {
   return invokeCommand<ToolStatus[]>("get_converter_tool_status");
+}
+
+export function listJobs(limit = 50): Promise<JobSummary[]> {
+  return invokeCommand<JobSummary[]>("list_jobs", { request: { limit } });
+}
+
+export function getJobDetails(jobId: string): Promise<JobDetailsResponse> {
+  return invokeCommand<JobDetailsResponse>("get_job_details", {
+    request: { jobId },
+  });
 }
 
 export function formatCommandError(error: unknown): string {

@@ -574,6 +574,183 @@ nav {
   font-weight: 750;
 }
 
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(100%, 980px);
+  margin-top: 18px;
+  padding: 10px 12px;
+  border: 1px solid rgba(116, 93, 66, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 250, 242, 0.68);
+  box-shadow: var(--shadow-sm);
+}
+
+.history-toolbar strong {
+  color: #253246;
+  font-size: 0.9rem;
+}
+
+.job-history-grid {
+  display: grid;
+  width: min(100%, 980px);
+  grid-template-columns: minmax(260px, 0.8fr) minmax(360px, 1.2fr);
+  gap: 12px;
+  margin-top: 12px;
+  min-height: 360px;
+}
+
+.job-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+  padding: 4px;
+}
+
+.job-row {
+  display: grid;
+  gap: 4px;
+  padding: 11px;
+  border: 1px solid rgba(116, 93, 66, 0.16);
+  border-radius: 14px;
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 250, 242, 0.94));
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+}
+
+.job-row:hover,
+.job-row[aria-current="true"] {
+  border-color: rgba(32, 111, 95, 0.28);
+  background: linear-gradient(180deg, #ffffff, #edf7f3);
+  transform: translateY(-1px);
+}
+
+.job-row-title {
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.job-row-meta {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.job-status {
+  width: fit-content;
+  margin-top: 3px;
+  padding: 4px 7px;
+  border: 1px solid rgba(32, 111, 95, 0.16);
+  border-radius: 999px;
+  color: #1f5144;
+  background: rgba(239, 250, 246, 0.82);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.job-status-failed,
+.job-status-canceled {
+  border-color: rgba(163, 41, 60, 0.22);
+  color: var(--danger);
+  background: rgba(255, 238, 241, 0.9);
+}
+
+.job-status-partiallyCompleted {
+  border-color: rgba(226, 155, 66, 0.26);
+  color: #875416;
+  background: rgba(255, 244, 225, 0.9);
+}
+
+.job-details {
+  margin-top: 0;
+  min-width: 0;
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+}
+
+.job-details-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.job-metrics {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.job-metrics span {
+  display: grid;
+  gap: 2px;
+  padding: 9px;
+  border: 1px solid rgba(116, 93, 66, 0.14);
+  border-radius: 12px;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.54);
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.job-metrics strong {
+  color: #1d2939;
+  font-size: 1.05rem;
+}
+
+.job-file-results {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 6px;
+  max-height: 260px;
+  margin: 12px 0 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.job-file-results li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 8px;
+  padding: 8px;
+  border: 1px solid rgba(116, 93, 66, 0.12);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.file-result-status {
+  color: var(--accent-strong);
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: capitalize;
+}
+
+.file-result-paths {
+  min-width: 0;
+  color: #344054;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.file-result-message {
+  grid-column: 2;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+}
+
 .empty-card,
 .status-card {
   max-width: 620px;
@@ -638,7 +815,8 @@ nav {
 
 @media (max-width: 1120px) {
   .workflow-grid,
-  .status-grid {
+  .status-grid,
+  .job-history-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -680,8 +858,15 @@ nav {
   .status-grid,
   .rule-form,
   .converter-options,
-  .workflow-grid {
+  .workflow-grid,
+  .job-history-grid,
+  .job-metrics {
     grid-template-columns: 1fr;
+  }
+
+  .job-list,
+  .job-details {
+    max-height: none;
   }
 
   .converter-workbench-header,
