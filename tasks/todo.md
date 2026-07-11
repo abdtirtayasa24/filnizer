@@ -168,7 +168,7 @@
   - Files: `src-tauri/src/tools/*`, `src-tauri/src/settings/*`, `src/features/settings/*`, `docs/release/*`
   - Dependencies: Task 22
 
-- [ ] Task 24: Add SignPath.io signing workflow documentation/config placeholders
+- [x] Task 24: Add SignPath.io signing workflow documentation/config placeholders
   - Acceptance: Release docs describe SignPath.io Open Source flow and CI placeholders; no signing secrets are committed.
   - Verify: Static review; secret scan for signing credentials.
   - Files: `docs/release/signing.md`, `.github/workflows/*` or CI docs, `package.json`

@@ -1,0 +1,40 @@
+name: Release signing placeholder
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-unsigned-portable:
+    name: Build unsigned portable artifact
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build portable artifact
+        run: npm run package:portable
+
+      - name: Upload unsigned portable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: filnizer-unsigned-portable
+          path: artifacts/*.zip
+          if-no-files-found: error
+
+      - name: SignPath integration placeholder
+        shell: pwsh
+        run: |
+          Write-Host "TODO: Replace this step with the approved SignPath.io Open Source integration after onboarding."
+          Write-Host "Do not commit signing secrets, certificates, or tokens to the repository."
