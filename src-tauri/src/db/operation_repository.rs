@@ -2,10 +2,12 @@ use rusqlite::params;
 
 use crate::db::AppDatabase;
 use crate::domain::conversion::ConversionFileResult;
+use crate::domain::files::FileEntry;
 use crate::domain::jobs::JobFileResult;
 use crate::domain::operations::OperationPlan;
 use crate::errors::AppError;
 use crate::organizer::apply::ApplyFileResult;
+use crate::organizer::duplicates::DuplicateSet;
 
 pub struct OperationRepository {
     database: AppDatabase,
@@ -85,6 +87,48 @@ impl OperationRepository {
         })
     }
 
+    pub fn save_scan_results(&self, job_id: &str, files: &[FileEntry]) -> Result<(), AppError> {
+        self.database.with_connection(|connection| {
+            for file in files {
+                let message = serde_json::to_string(&file.category)
+                    .map_err(|error| AppError::Unexpected(error.to_string()))?;
+                connection.execute(
+                    "INSERT INTO file_results
+                     (job_id, source_path, target_path, status, message, updated_at_unix_ms)
+                     VALUES (?1, ?2, NULL, ?3, ?4, ?5)",
+                    params![job_id, file.path, "scanned", message, current_unix_ms()],
+                )?;
+            }
+            Ok(())
+        })
+    }
+
+    pub fn save_duplicate_results(
+        &self,
+        job_id: &str,
+        sets: &[DuplicateSet],
+    ) -> Result<(), AppError> {
+        self.database.with_connection(|connection| {
+            for duplicate_set in sets {
+                let message = format!(
+                    "Set {} · {} bytes · {} files",
+                    duplicate_set.blake3,
+                    duplicate_set.size_bytes,
+                    duplicate_set.paths.len()
+                );
+                for path in &duplicate_set.paths {
+                    connection.execute(
+                        "INSERT INTO file_results
+                         (job_id, source_path, target_path, status, message, updated_at_unix_ms)
+                         VALUES (?1, ?2, NULL, ?3, ?4, ?5)",
+                        params![job_id, path, "duplicate", message, current_unix_ms()],
+                    )?;
+                }
+            }
+            Ok(())
+        })
+    }
+
     pub fn count_file_results(&self, job_id: &str) -> Result<u64, AppError> {
         self.database.with_connection(|connection| {
             let count = connection.query_row(
@@ -138,25 +182,18 @@ mod tests {
     use crate::db::operation_repository::OperationRepository;
     use crate::db::AppDatabase;
     use crate::domain::conversion::{ConversionFileResult, ConversionFileStatus};
+    use crate::domain::files::{FileCategory, FileEntry, HashStatus};
     use crate::domain::jobs::{JobKind, JobStatus, JobSummary};
+    use crate::organizer::duplicates::DuplicateSet;
 
     #[test]
     fn list_file_results_returns_persisted_status_labels() {
         let temp_dir = tempfile::tempdir().unwrap();
-        let database = AppDatabase::open(temp_dir.path().join("test.sqlite3")).unwrap();
-        JobsRepository::new(database.clone())
-            .insert_job(&JobSummary {
-                id: "job-1".to_string(),
-                kind: JobKind::Conversion,
-                status: JobStatus::Completed,
-                name: "Conversion".to_string(),
-                total_files: 2,
-                completed_files: 1,
-                created_at_unix_ms: 1,
-                updated_at_unix_ms: 1,
-                error_message: None,
-            })
-            .unwrap();
+        let database = seeded_database(
+            temp_dir.path().join("test.sqlite3"),
+            "job-1",
+            JobKind::Conversion,
+        );
         let repository = OperationRepository::new(database);
 
         repository
@@ -187,5 +224,88 @@ mod tests {
         assert_eq!(results[0].status, "completed");
         assert_eq!(results[1].status, "failed");
         assert_eq!(results[1].message.as_deref(), Some("could not convert"));
+    }
+
+    #[test]
+    fn save_scan_results_persists_each_scanned_file() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let database = seeded_database(
+            temp_dir.path().join("test.sqlite3"),
+            "scan-1",
+            JobKind::OrganizerScan,
+        );
+        let repository = OperationRepository::new(database);
+
+        repository
+            .save_scan_results(
+                "scan-1",
+                &[FileEntry {
+                    path: "C:/Downloads/report.pdf".to_string(),
+                    name: "report.pdf".to_string(),
+                    extension: Some("pdf".to_string()),
+                    size_bytes: 100,
+                    modified_unix_ms: None,
+                    category: FileCategory::Pdfs,
+                    hash_status: HashStatus::NotRequested,
+                }],
+            )
+            .unwrap();
+
+        let results = repository.list_file_results("scan-1").unwrap();
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].status, "scanned");
+        assert_eq!(results[0].source_path, "C:/Downloads/report.pdf");
+        assert_eq!(results[0].message.as_deref(), Some("\"pdfs\""));
+    }
+
+    #[test]
+    fn save_duplicate_results_persists_each_duplicate_path() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let database = seeded_database(
+            temp_dir.path().join("test.sqlite3"),
+            "dupes-1",
+            JobKind::DuplicateAnalysis,
+        );
+        let repository = OperationRepository::new(database);
+
+        repository
+            .save_duplicate_results(
+                "dupes-1",
+                &[DuplicateSet {
+                    size_bytes: 42,
+                    blake3: "hash".to_string(),
+                    paths: vec!["a.txt".to_string(), "b.txt".to_string()],
+                }],
+            )
+            .unwrap();
+
+        let results = repository.list_file_results("dupes-1").unwrap();
+
+        assert_eq!(results.len(), 2);
+        assert_eq!(results[0].status, "duplicate");
+        assert!(results[0].message.as_ref().unwrap().contains("42 bytes"));
+    }
+
+    fn seeded_database(
+        path: impl AsRef<std::path::Path>,
+        job_id: &str,
+        kind: JobKind,
+    ) -> AppDatabase {
+        let database = AppDatabase::open(path).unwrap();
+        JobsRepository::new(database.clone())
+            .insert_job(&JobSummary {
+                id: job_id.to_string(),
+                kind,
+                status: JobStatus::Completed,
+                name: "History job".to_string(),
+                total_files: 2,
+                completed_files: 1,
+                created_at_unix_ms: 1,
+                updated_at_unix_ms: 1,
+                error_message: None,
+            })
+            .unwrap();
+        database
     }
 }

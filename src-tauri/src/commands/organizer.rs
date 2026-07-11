@@ -63,6 +63,8 @@ pub async fn start_organizer_scan(
 
     match scan_result {
         Ok(result) => {
+            OperationRepository::new(state.database.clone())
+                .save_scan_results(&job_id, &result.files)?;
             repository.update_job_progress(
                 &job_id,
                 JobStatus::Completed,
@@ -103,7 +105,7 @@ pub async fn find_duplicate_files(
         .map_err(|error| crate::errors::AppError::Unexpected(error.to_string()))??;
 
     jobs.insert_job(&JobSummary {
-        id: job_id,
+        id: job_id.clone(),
         kind: JobKind::DuplicateAnalysis,
         status: JobStatus::Completed,
         name: "Duplicate analysis".to_string(),
@@ -113,6 +115,7 @@ pub async fn find_duplicate_files(
         updated_at_unix_ms: now,
         error_message: None,
     })?;
+    OperationRepository::new(state.database.clone()).save_duplicate_results(&job_id, &sets)?;
 
     Ok(CommandResponse::new(FindDuplicatesResponse { sets }))
 }
