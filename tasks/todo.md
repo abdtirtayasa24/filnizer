@@ -156,7 +156,7 @@
   - Files: `src/features/settings/*`, `src-tauri/src/settings/*`, `src-tauri/src/tools/*`, `src-tauri/src/commands/settings.rs`
   - Dependencies: Tasks 16, 17, 19
 
-- [ ] Task 22: Add portable folder/ZIP packaging script
+- [x] Task 22: Add portable folder/ZIP packaging script
   - Acceptance: Script assembles `Filnizer.exe`, app-local helpers, licenses, README, and required assets into a portable folder/ZIP.
   - Verify: `npm run package:portable` creates expected artifact on Windows build machine.
   - Files: `package.json`, `scripts/package-portable.*`, `src-tauri/tauri.conf.json`, `docs/release/*`
