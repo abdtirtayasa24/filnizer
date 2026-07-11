@@ -13,7 +13,47 @@ import {
   formatCommandError,
 } from "../../lib/tauri-client";
 
+type ConversionMode = "image" | "spreadsheet" | "media" | "pdf" | "markdown" | "office";
+
+const conversionModes: Array<{
+  value: ConversionMode;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "image",
+    label: "Image conversion",
+    description: "PNG, JPG, WebP, BMP, and TIFF conversions.",
+  },
+  {
+    value: "spreadsheet",
+    label: "Spreadsheet conversion",
+    description: "CSV to XLSX or XLSX back to CSV.",
+  },
+  {
+    value: "media",
+    label: "Media conversion",
+    description: "Audio/video outputs through app-local FFmpeg.",
+  },
+  {
+    value: "pdf",
+    label: "PDF conversion",
+    description: "Extract text or render PNG pages through app-local Pdfium.",
+  },
+  {
+    value: "markdown",
+    label: "Markdown-to-PDF",
+    description: "Create local PDFs from Markdown while rejecting remote URLs.",
+  },
+  {
+    value: "office",
+    label: "Office-to-PDF",
+    description: "Convert DOC, DOCX, or ODT through your local LibreOffice.",
+  },
+];
+
 export function ConverterView() {
+  const [selectedMode, setSelectedMode] = useState<ConversionMode>("image");
   const [imagePaths, setImagePaths] = useState<string[]>([]);
   const [spreadsheetPaths, setSpreadsheetPaths] = useState<string[]>([]);
   const [mediaPaths, setMediaPaths] = useState<string[]>([]);
@@ -29,6 +69,8 @@ export function ConverterView() {
   const [results, setResults] = useState<ConversionFileResult[]>([]);
   const [isConverting, setIsConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const selectedModeDetails = conversionModes.find((mode) => mode.value === selectedMode) ?? conversionModes[0];
 
   async function chooseImages() {
     const selected = await chooseFiles("Images", [
@@ -193,15 +235,224 @@ export function ConverterView() {
     setError(null);
   }
 
+  function changeMode(mode: ConversionMode) {
+    setSelectedMode(mode);
+    resetResults();
+  }
+
+  function renderConversionPanel() {
+    switch (selectedMode) {
+      case "image":
+        return (
+          <div className="workflow-card converter-card converter-active-card">
+            <h3>Image conversion</h3>
+            <p>Choose image files, then pick the exact local output format.</p>
+            <div className="action-row">
+              <button type="button" className="primary-button" onClick={chooseImages}>
+                Choose images
+              </button>
+            </div>
+            <div className="converter-options">
+              <label>
+                Output format
+                <select
+                  value={imageOutputFormat}
+                  onChange={(event) => setImageOutputFormat(event.currentTarget.value)}
+                >
+                  <option value="png">PNG</option>
+                  <option value="jpg">JPG</option>
+                  <option value="webp">WebP</option>
+                  <option value="bmp">BMP</option>
+                  <option value="tiff">TIFF</option>
+                </select>
+              </label>
+            </div>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={convertImages}
+              disabled={imagePaths.length === 0 || !outputDirectory || isConverting}
+            >
+              {isConverting ? "Converting..." : "Convert images"}
+            </button>
+            <p>{imagePaths.length} image file(s) selected.</p>
+          </div>
+        );
+      case "spreadsheet":
+        return (
+          <div className="workflow-card converter-card converter-active-card">
+            <h3>Spreadsheet conversion</h3>
+            <p>Move between CSV and XLSX without sending sheets anywhere.</p>
+            <div className="action-row">
+              <button type="button" className="primary-button" onClick={chooseSpreadsheets}>
+                Choose CSV/XLSX files
+              </button>
+            </div>
+            <div className="converter-options">
+              <label>
+                Output format
+                <select
+                  value={spreadsheetOutputFormat}
+                  onChange={(event) => setSpreadsheetOutputFormat(event.currentTarget.value)}
+                >
+                  <option value="xlsx">CSV to XLSX</option>
+                  <option value="csv">XLSX to CSV</option>
+                </select>
+              </label>
+            </div>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={convertSpreadsheets}
+              disabled={spreadsheetPaths.length === 0 || !outputDirectory || isConverting}
+            >
+              {isConverting ? "Converting..." : "Convert spreadsheets"}
+            </button>
+            <p>{spreadsheetPaths.length} spreadsheet file(s) selected.</p>
+          </div>
+        );
+      case "media":
+        return (
+          <div className="workflow-card converter-card converter-active-card">
+            <h3>Media conversion</h3>
+            <p>Requires app-local FFmpeg. Missing FFmpeg is reported without downloading anything.</p>
+            <div className="action-row">
+              <button type="button" className="primary-button" onClick={chooseMedia}>
+                Choose media files
+              </button>
+            </div>
+            <div className="converter-options">
+              <label>
+                Output format
+                <select
+                  value={mediaOutputFormat}
+                  onChange={(event) => setMediaOutputFormat(event.currentTarget.value)}
+                >
+                  <option value="mp3">MP3</option>
+                  <option value="aac">AAC</option>
+                  <option value="mp4">MP4</option>
+                  <option value="mkv">MKV</option>
+                </select>
+              </label>
+            </div>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={convertMedia}
+              disabled={mediaPaths.length === 0 || !outputDirectory || isConverting}
+            >
+              {isConverting ? "Converting..." : "Convert media"}
+            </button>
+            <p>{mediaPaths.length} media file(s) selected.</p>
+          </div>
+        );
+      case "pdf":
+        return (
+          <div className="workflow-card converter-card converter-active-card">
+            <h3>PDF conversion</h3>
+            <p>Requires app-local Pdfium. Missing Pdfium is reported without downloading anything.</p>
+            <div className="action-row">
+              <button type="button" className="primary-button" onClick={choosePdfs}>
+                Choose PDFs
+              </button>
+            </div>
+            <div className="converter-options">
+              <label>
+                Output format
+                <select
+                  value={pdfOutputFormat}
+                  onChange={(event) => setPdfOutputFormat(event.currentTarget.value)}
+                >
+                  <option value="txt">Text</option>
+                  <option value="png">PNG images</option>
+                </select>
+              </label>
+            </div>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={convertPdfs}
+              disabled={pdfPaths.length === 0 || !outputDirectory || isConverting}
+            >
+              {isConverting ? "Converting..." : "Convert PDFs"}
+            </button>
+            <p>{pdfPaths.length} PDF file(s) selected.</p>
+          </div>
+        );
+      case "markdown":
+        return (
+          <div className="workflow-card converter-card converter-active-card">
+            <h3>Markdown to PDF</h3>
+            <p>Remote URLs are rejected so conversion stays offline.</p>
+            <div className="action-row">
+              <button type="button" className="primary-button" onClick={chooseMarkdown}>
+                Choose Markdown
+              </button>
+            </div>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={convertMarkdown}
+              disabled={markdownPaths.length === 0 || !outputDirectory || isConverting}
+            >
+              {isConverting ? "Converting..." : "Convert Markdown"}
+            </button>
+            <p>{markdownPaths.length} Markdown file(s) selected.</p>
+          </div>
+        );
+      case "office":
+        return (
+          <div className="workflow-card converter-card converter-active-card">
+            <h3>Office to PDF</h3>
+            <p>Requires a local LibreOffice installation. Filnizer only detects it; it does not download it.</p>
+            <div className="action-row">
+              <button type="button" className="primary-button" onClick={chooseOffice}>
+                Choose Office documents
+              </button>
+            </div>
+            <button
+              type="button"
+              className="primary-button"
+              onClick={convertOffice}
+              disabled={officePaths.length === 0 || !outputDirectory || isConverting}
+            >
+              {isConverting ? "Converting..." : "Convert Office files"}
+            </button>
+            <p>{officePaths.length} Office document(s) selected.</p>
+          </div>
+        );
+    }
+  }
+
   return (
     <section className="content-panel" aria-labelledby="converter-heading">
       <p className="eyebrow">Converter</p>
       <h2 id="converter-heading">Convert files locally.</h2>
-      <p>Convert images and simple spreadsheets without uploading files.</p>
+      <p>Pick one conversion mode, choose files, and keep every output on this computer.</p>
 
-      <div className="workflow-card converter-card">
-        <h3>Shared output settings</h3>
-        <div className="action-row">
+      <div className="workflow-card converter-card converter-workbench">
+        <div className="converter-workbench-header">
+          <div>
+            <h3>Conversion workbench</h3>
+            <p>{selectedModeDetails.description}</p>
+          </div>
+          <span className="converter-mode-badge">{selectedModeDetails.label}</span>
+        </div>
+
+        <div className="converter-mode-row">
+          <label className="converter-mode-select">
+            Conversion type
+            <select
+              value={selectedMode}
+              onChange={(event) => changeMode(event.currentTarget.value as ConversionMode)}
+            >
+              {conversionModes.map((mode) => (
+                <option key={mode.value} value={mode.value}>
+                  {mode.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             type="button"
             className="secondary-button"
@@ -210,7 +461,8 @@ export function ConverterView() {
             Choose output folder
           </button>
         </div>
-        <div className="converter-options">
+
+        <div className="converter-options converter-shared-options">
           <label>
             If output exists
             <select
@@ -223,173 +475,10 @@ export function ConverterView() {
             </select>
           </label>
         </div>
-        {outputDirectory ? <p className="selected-path">{outputDirectory}</p> : null}
+        {outputDirectory ? <p className="selected-path">Output: {outputDirectory}</p> : null}
       </div>
 
-      <div className="workflow-card converter-card">
-        <h3>Image conversion</h3>
-        <div className="action-row">
-          <button type="button" className="primary-button" onClick={chooseImages}>
-            Choose images
-          </button>
-        </div>
-        <div className="converter-options">
-          <label>
-            Output format
-            <select
-              value={imageOutputFormat}
-              onChange={(event) => setImageOutputFormat(event.currentTarget.value)}
-            >
-              <option value="png">PNG</option>
-              <option value="jpg">JPG</option>
-              <option value="webp">WebP</option>
-              <option value="bmp">BMP</option>
-              <option value="tiff">TIFF</option>
-            </select>
-          </label>
-        </div>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={convertImages}
-          disabled={imagePaths.length === 0 || !outputDirectory || isConverting}
-        >
-          {isConverting ? "Converting..." : "Convert images"}
-        </button>
-        <p>{imagePaths.length} image file(s) selected.</p>
-      </div>
-
-      <div className="workflow-card converter-card">
-        <h3>Spreadsheet conversion</h3>
-        <div className="action-row">
-          <button type="button" className="primary-button" onClick={chooseSpreadsheets}>
-            Choose CSV/XLSX files
-          </button>
-        </div>
-        <div className="converter-options">
-          <label>
-            Output format
-            <select
-              value={spreadsheetOutputFormat}
-              onChange={(event) => setSpreadsheetOutputFormat(event.currentTarget.value)}
-            >
-              <option value="xlsx">CSV to XLSX</option>
-              <option value="csv">XLSX to CSV</option>
-            </select>
-          </label>
-        </div>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={convertSpreadsheets}
-          disabled={spreadsheetPaths.length === 0 || !outputDirectory || isConverting}
-        >
-          {isConverting ? "Converting..." : "Convert spreadsheets"}
-        </button>
-        <p>{spreadsheetPaths.length} spreadsheet file(s) selected.</p>
-      </div>
-
-      <div className="workflow-card converter-card">
-        <h3>Media conversion</h3>
-        <p>Requires app-local FFmpeg. Missing FFmpeg is reported without downloading anything.</p>
-        <div className="action-row">
-          <button type="button" className="primary-button" onClick={chooseMedia}>
-            Choose media files
-          </button>
-        </div>
-        <div className="converter-options">
-          <label>
-            Output format
-            <select
-              value={mediaOutputFormat}
-              onChange={(event) => setMediaOutputFormat(event.currentTarget.value)}
-            >
-              <option value="mp3">MP3</option>
-              <option value="aac">AAC</option>
-              <option value="mp4">MP4</option>
-              <option value="mkv">MKV</option>
-            </select>
-          </label>
-        </div>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={convertMedia}
-          disabled={mediaPaths.length === 0 || !outputDirectory || isConverting}
-        >
-          {isConverting ? "Converting..." : "Convert media"}
-        </button>
-        <p>{mediaPaths.length} media file(s) selected.</p>
-      </div>
-
-      <div className="workflow-card converter-card">
-        <h3>PDF conversion</h3>
-        <p>Requires app-local Pdfium. Missing Pdfium is reported without downloading anything.</p>
-        <div className="action-row">
-          <button type="button" className="primary-button" onClick={choosePdfs}>
-            Choose PDFs
-          </button>
-        </div>
-        <div className="converter-options">
-          <label>
-            Output format
-            <select
-              value={pdfOutputFormat}
-              onChange={(event) => setPdfOutputFormat(event.currentTarget.value)}
-            >
-              <option value="txt">Text</option>
-              <option value="png">PNG images</option>
-            </select>
-          </label>
-        </div>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={convertPdfs}
-          disabled={pdfPaths.length === 0 || !outputDirectory || isConverting}
-        >
-          {isConverting ? "Converting..." : "Convert PDFs"}
-        </button>
-        <p>{pdfPaths.length} PDF file(s) selected.</p>
-      </div>
-
-      <div className="workflow-card converter-card">
-        <h3>Markdown to PDF</h3>
-        <p>Remote URLs are rejected so conversion stays offline.</p>
-        <div className="action-row">
-          <button type="button" className="primary-button" onClick={chooseMarkdown}>
-            Choose Markdown
-          </button>
-        </div>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={convertMarkdown}
-          disabled={markdownPaths.length === 0 || !outputDirectory || isConverting}
-        >
-          {isConverting ? "Converting..." : "Convert Markdown"}
-        </button>
-        <p>{markdownPaths.length} Markdown file(s) selected.</p>
-      </div>
-
-      <div className="workflow-card converter-card">
-        <h3>Office to PDF</h3>
-        <p>Requires a local LibreOffice installation. Filnizer only detects it; it does not download it.</p>
-        <div className="action-row">
-          <button type="button" className="primary-button" onClick={chooseOffice}>
-            Choose Office documents
-          </button>
-        </div>
-        <button
-          type="button"
-          className="primary-button"
-          onClick={convertOffice}
-          disabled={officePaths.length === 0 || !outputDirectory || isConverting}
-        >
-          {isConverting ? "Converting..." : "Convert Office files"}
-        </button>
-        <p>{officePaths.length} Office document(s) selected.</p>
-      </div>
+      {renderConversionPanel()}
 
       {error ? <p className="inline-error">{error}</p> : null}
       {results.length > 0 ? (
