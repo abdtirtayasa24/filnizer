@@ -38,6 +38,8 @@ pub fn run() {
             commands::converter::convert_spreadsheet_files,
             commands::converter::get_converter_tool_status,
             commands::converter::plan_conversion_outputs_command,
+            commands::jobs::get_job_details,
+            commands::jobs::list_jobs,
             commands::organizer::apply_organizer_plan_command,
             commands::organizer::find_duplicate_files,
             commands::organizer::list_organizer_rules,

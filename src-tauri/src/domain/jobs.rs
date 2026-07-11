@@ -16,6 +16,18 @@ pub struct JobSummary {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct JobFileResult {
+    pub id: i64,
+    pub job_id: String,
+    pub source_path: String,
+    pub target_path: Option<String>,
+    pub status: String,
+    pub message: Option<String>,
+    pub updated_at_unix_ms: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum JobKind {
     OrganizerScan,
     OrganizerApply,

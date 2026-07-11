@@ -84,52 +84,59 @@ impl JobsRepository {
                  WHERE id = ?1",
             )?;
 
-            let result = statement.query_row([id], |row| {
-                let kind: String = row.get(1)?;
-                let status: String = row.get(2)?;
-
-                Ok((
-                    row.get::<_, String>(0)?,
-                    kind,
-                    status,
-                    row.get::<_, String>(3)?,
-                    row.get::<_, i64>(4)?,
-                    row.get::<_, i64>(5)?,
-                    row.get::<_, i64>(6)?,
-                    row.get::<_, i64>(7)?,
-                    row.get::<_, Option<String>>(8)?,
-                ))
-            });
+            let result = statement.query_row([id], read_job_summary_row);
 
             match result {
-                Ok((
-                    id,
-                    kind,
-                    status,
-                    name,
-                    total_files,
-                    completed_files,
-                    created_at_unix_ms,
-                    updated_at_unix_ms,
-                    error_message,
-                )) => Ok(Some(JobSummary {
-                    id,
-                    kind: serde_json::from_str(&kind)
-                        .map_err(|error| AppError::Unexpected(error.to_string()))?,
-                    status: serde_json::from_str(&status)
-                        .map_err(|error| AppError::Unexpected(error.to_string()))?,
-                    name,
-                    total_files: total_files as u64,
-                    completed_files: completed_files as u64,
-                    created_at_unix_ms,
-                    updated_at_unix_ms,
-                    error_message,
-                })),
+                Ok(job) => Ok(Some(job)),
                 Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
                 Err(error) => Err(error.into()),
             }
         })
     }
+
+    pub fn list_jobs(&self, limit: u64) -> Result<Vec<JobSummary>, AppError> {
+        let limit = limit.clamp(1, 200) as i64;
+        self.database.with_connection(|connection| {
+            let mut statement = connection.prepare(
+                "SELECT id, kind, status, name, total_files, completed_files,
+                        created_at_unix_ms, updated_at_unix_ms, error_message
+                 FROM jobs
+                 ORDER BY updated_at_unix_ms DESC, created_at_unix_ms DESC
+                 LIMIT ?1",
+            )?;
+            let rows = statement.query_map([limit], read_job_summary_row)?;
+            rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+        })
+    }
+}
+
+fn read_job_summary_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<JobSummary> {
+    let kind: String = row.get(1)?;
+    let status: String = row.get(2)?;
+
+    Ok(JobSummary {
+        id: row.get(0)?,
+        kind: serde_json::from_str(&kind).map_err(|error| {
+            rusqlite::Error::FromSqlConversionFailure(
+                1,
+                rusqlite::types::Type::Text,
+                Box::new(error),
+            )
+        })?,
+        status: serde_json::from_str(&status).map_err(|error| {
+            rusqlite::Error::FromSqlConversionFailure(
+                2,
+                rusqlite::types::Type::Text,
+                Box::new(error),
+            )
+        })?,
+        name: row.get(3)?,
+        total_files: row.get::<_, i64>(4)? as u64,
+        completed_files: row.get::<_, i64>(5)? as u64,
+        created_at_unix_ms: row.get(6)?,
+        updated_at_unix_ms: row.get(7)?,
+        error_message: row.get(8)?,
+    })
 }
 
 fn current_unix_ms() -> i64 {
@@ -166,5 +173,34 @@ mod tests {
 
         assert_eq!(repository.get_job("job-1").unwrap(), Some(job));
         assert_eq!(repository.get_job("missing").unwrap(), None);
+    }
+
+    #[test]
+    fn list_jobs_returns_newest_first_with_limit() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let database = AppDatabase::open(temp_dir.path().join("test.sqlite3")).unwrap();
+        let repository = JobsRepository::new(database);
+
+        for index in 1..=3 {
+            repository
+                .insert_job(&JobSummary {
+                    id: format!("job-{index}"),
+                    kind: JobKind::Conversion,
+                    status: JobStatus::Completed,
+                    name: format!("Job {index}"),
+                    total_files: index,
+                    completed_files: index,
+                    created_at_unix_ms: index as i64,
+                    updated_at_unix_ms: index as i64,
+                    error_message: None,
+                })
+                .unwrap();
+        }
+
+        let jobs = repository.list_jobs(2).unwrap();
+
+        assert_eq!(jobs.len(), 2);
+        assert_eq!(jobs[0].id, "job-3");
+        assert_eq!(jobs[1].id, "job-2");
     }
 }
