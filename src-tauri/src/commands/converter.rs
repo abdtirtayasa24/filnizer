@@ -17,6 +17,7 @@ use crate::domain::jobs::{JobKind, JobSummary};
 use crate::tools::ffmpeg::{ffmpeg_status, ToolStatus};
 use crate::tools::libreoffice::libreoffice_status;
 use crate::tools::pdfium::pdfium_status;
+use crate::tools::webview2::webview2_status;
 use crate::AppState;
 
 #[derive(Debug, Serialize)]
@@ -32,6 +33,7 @@ pub async fn get_converter_tool_status() -> CommandResult<Vec<ToolStatus>> {
         ffmpeg_status(),
         pdfium_status(),
         libreoffice_status(),
+        webview2_status(),
     ]))
 }
 

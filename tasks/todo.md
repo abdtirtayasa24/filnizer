@@ -162,7 +162,7 @@
   - Files: `package.json`, `scripts/package-portable.*`, `src-tauri/tauri.conf.json`, `docs/release/*`
   - Dependencies: Tasks 16, 17
 
-- [ ] Task 23: Add startup validation for app-local FFmpeg/Pdfium and WebView2 guidance
+- [x] Task 23: Add startup validation for app-local FFmpeg/Pdfium and WebView2 guidance
   - Acceptance: Startup/tool status detects missing helper files and WebView2-related failures with clear English guidance and no network calls.
   - Verify: Manual run with helpers temporarily removed; unit tests for path resolution.
   - Files: `src-tauri/src/tools/*`, `src-tauri/src/settings/*`, `src/features/settings/*`, `docs/release/*`
