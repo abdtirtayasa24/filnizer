@@ -17,7 +17,7 @@ pub fn ffmpeg_status() -> ToolStatus {
         name: "FFmpeg",
         available: path.is_some(),
         path: path.map(|value| value.to_string_lossy().to_string()),
-        guidance: Some("Place ffmpeg.exe beside Filnizer.exe or under the app binaries folder."),
+        guidance: Some("Portable releases should include FFmpeg at binaries/ffmpeg.exe."),
     }
 }
 

@@ -78,6 +78,8 @@ mod tests {
             default_conflict_policy: ConflictPolicy::Skip,
             history_retention_days: Some(30),
             show_privacy_note: false,
+            allow_network_installs: true,
+            libreoffice_install_prompted: true,
         };
         repository.save_app_settings(&settings).unwrap();
 

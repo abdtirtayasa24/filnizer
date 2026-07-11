@@ -1,10 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import logoUrl from "../../src-tauri/icons/192x192.png";
 import { ConverterView } from "../features/converter/ConverterView";
 import { JobsView } from "../features/jobs/JobsView";
 import { OrganizerView } from "../features/organizer/OrganizerView";
 import { SettingsView } from "../features/settings/SettingsView";
+import {
+  formatCommandError,
+  getAppSettings,
+  getConverterToolStatus,
+  installLibreOffice,
+  saveAppSettings,
+} from "../lib/tauri-client";
 
 type SectionId = "organizer" | "converter" | "jobs" | "settings";
 
@@ -23,6 +30,52 @@ const sections: Section[] = [
 export function App() {
   const [activeSection, setActiveSection] = useState<SectionId>("organizer");
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function offerLibreOfficeInstall() {
+      try {
+        const [settings, tools] = await Promise.all([
+          getAppSettings(),
+          getConverterToolStatus(),
+        ]);
+        const libreOffice = tools.find((tool) => tool.name === "LibreOffice");
+        if (
+          !isMounted ||
+          !settings.allowNetworkInstalls ||
+          settings.libreofficeInstallPrompted ||
+          libreOffice?.available
+        ) {
+          return;
+        }
+
+        const nextSettings = {
+          ...settings,
+          libreofficeInstallPrompted: true,
+        };
+        await saveAppSettings(nextSettings);
+
+        const shouldInstall = window.confirm(
+          "LibreOffice is required for Office-to-PDF conversion. Filnizer can download and install LibreOffice in the background using Windows winget. Do you want to install it now?",
+        );
+        if (!shouldInstall) {
+          return;
+        }
+
+        const result = await installLibreOffice();
+        window.alert(result.message);
+      } catch (error) {
+        window.alert(`LibreOffice installation could not start: ${formatCommandError(error)}`);
+      }
+    }
+
+    void offerLibreOfficeInstall();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <main className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
@@ -30,7 +83,7 @@ export function App() {
           <img className="brand-logo" src={logoUrl} alt="" aria-hidden="true" />
           <div>
             <h1>Filnizer</h1>
-            <p>Offline file helper</p>
+            <p>Local file helper</p>
           </div>
         </div>
 
@@ -50,7 +103,7 @@ export function App() {
 
         <div className="sidebar-footer" aria-label="Runtime status">
           <span className="status-dot" aria-hidden="true" />
-          <span>Offline workspace</span>
+          <span>Local-first workspace</span>
         </div>
       </aside>
 

@@ -1,6 +1,17 @@
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
+use serde::Serialize;
+
+use crate::errors::AppError;
 use crate::tools::ffmpeg::ToolStatus;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LibreOfficeInstallResult {
+    pub started: bool,
+    pub message: String,
+}
 
 pub fn libreoffice_status() -> ToolStatus {
     let path = find_libreoffice();
@@ -8,7 +19,9 @@ pub fn libreoffice_status() -> ToolStatus {
         name: "LibreOffice",
         available: path.is_some(),
         path: path.map(|value| value.to_string_lossy().to_string()),
-        guidance: Some("Install LibreOffice locally to enable DOC/DOCX to PDF conversion."),
+        guidance: Some(
+            "Install LibreOffice locally or let Filnizer install it with your confirmation.",
+        ),
     }
 }
 
@@ -50,6 +63,55 @@ fn common_install_locations() -> Vec<PathBuf> {
     candidates.push(PathBuf::from("/usr/bin/soffice"));
     candidates.push(PathBuf::from("/usr/local/bin/soffice"));
     candidates
+}
+
+pub fn install_libreoffice_with_winget() -> Result<LibreOfficeInstallResult, AppError> {
+    if !cfg!(windows) {
+        return Err(AppError::validation(
+            "Automatic LibreOffice installation is only supported on Windows.",
+        ));
+    }
+
+    if find_libreoffice().is_some() {
+        return Ok(LibreOfficeInstallResult {
+            started: false,
+            message: "LibreOffice is already installed.".to_string(),
+        });
+    }
+
+    let output = Command::new("winget")
+        .args([
+            "install",
+            "--id",
+            "TheDocumentFoundation.LibreOffice",
+            "--source",
+            "winget",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+        ])
+        .output()
+        .map_err(|error| {
+            AppError::ExternalTool(format!(
+                "Could not start winget to install LibreOffice: {error}"
+            ))
+        })?;
+
+    if output.status.success() {
+        return Ok(LibreOfficeInstallResult {
+            started: true,
+            message: "LibreOffice installation completed or was accepted by winget.".to_string(),
+        });
+    }
+
+    let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+    let stdout = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    let detail = if !stderr.is_empty() { stderr } else { stdout };
+    Err(AppError::ExternalTool(if detail.is_empty() {
+        "LibreOffice installation failed through winget.".to_string()
+    } else {
+        format!("LibreOffice installation failed through winget: {detail}")
+    }))
 }
 
 fn find_libreoffice_on_path() -> Option<PathBuf> {

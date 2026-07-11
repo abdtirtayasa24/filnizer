@@ -48,6 +48,7 @@ pub fn run() {
             commands::organizer::start_organizer_scan,
             commands::organizer::undo_organizer_plan_command,
             commands::settings::get_app_settings,
+            commands::settings::install_libreoffice,
             commands::settings::save_app_settings
         ])
         .run(tauri::generate_context!())

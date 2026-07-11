@@ -8,7 +8,7 @@ pub fn pdfium_status() -> ToolStatus {
         name: "Pdfium",
         available: path.is_some(),
         path: path.map(|value| value.to_string_lossy().to_string()),
-        guidance: Some("Place Pdfium beside Filnizer.exe or under the app binaries folder."),
+        guidance: Some("Portable releases should include Pdfium at binaries/pdfium.dll."),
     }
 }
 

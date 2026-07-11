@@ -6,16 +6,16 @@ Filnizer is a local/offline Windows desktop utility for organizing and convertin
 
 1. Extract the ZIP into a normal folder such as `C:\Tools\Filnizer`.
 2. Launch `Filnizer.exe`.
-3. Keep the `binaries` folder beside `Filnizer.exe` when helper tools are included.
+3. Keep the bundled `binaries` folder beside `Filnizer.exe`.
 
 ## Offline behavior
 
-Filnizer is designed to run without telemetry, update checks, automatic downloads, browser opening, or remote conversion APIs.
+Filnizer is designed to run without telemetry, update checks, browser opening, or remote conversion APIs. LibreOffice installation may use network access only after explicit user confirmation.
 
-## Optional helper tools
+## Bundled helper tools
 
-- FFmpeg: enables media conversion when bundled app-local.
-- Pdfium: enables PDF conversion when bundled app-local.
-- LibreOffice: detected from your system installation for Office-to-PDF conversion; it is not downloaded by Filnizer.
+- FFmpeg is bundled app-local under `binaries/ffmpeg.exe` for media conversion.
+- Pdfium is bundled app-local under `binaries/pdfium.dll` for PDF conversion.
+- LibreOffice is detected from your system installation for Office-to-PDF conversion; if missing, Filnizer can offer to install it through Windows winget after explicit user confirmation.
 
-If a helper is missing, Filnizer shows English guidance in Settings and dependent conversions fail safely.
+If LibreOffice is missing and the user declines installation, Filnizer shows English guidance in Settings and Office-to-PDF conversion fails safely.

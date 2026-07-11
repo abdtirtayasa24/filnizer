@@ -9,6 +9,8 @@ pub struct AppSettings {
     pub default_conflict_policy: ConflictPolicy,
     pub history_retention_days: Option<u32>,
     pub show_privacy_note: bool,
+    pub allow_network_installs: bool,
+    pub libreoffice_install_prompted: bool,
 }
 
 impl Default for AppSettings {
@@ -18,6 +20,8 @@ impl Default for AppSettings {
             default_conflict_policy: ConflictPolicy::Rename,
             history_retention_days: Some(90),
             show_privacy_note: true,
+            allow_network_installs: true,
+            libreoffice_install_prompted: false,
         }
     }
 }

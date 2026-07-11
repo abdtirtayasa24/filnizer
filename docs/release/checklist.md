@@ -2,6 +2,14 @@
 
 Run this checklist on a clean Windows 10+ machine or VM before publishing a release.
 
+## Portable package contents
+
+- [ ] Confirm the ZIP contains `Filnizer.exe`.
+- [ ] Confirm the ZIP contains `README.md` and `docs/`.
+- [ ] Confirm the ZIP contains `binaries/ffmpeg.exe`.
+- [ ] Confirm the ZIP contains `binaries/pdfium.dll`.
+- [ ] Confirm license inventory has exact source/version/checksum/license entries for bundled FFmpeg and Pdfium binaries.
+
 ## Portable launch
 
 - [ ] Extract the portable ZIP to a normal user-writable folder.
@@ -13,8 +21,8 @@ Run this checklist on a clean Windows 10+ machine or VM before publishing a rele
 
 - [ ] Start the app with network disconnected and confirm it still opens.
 - [ ] Confirm the app does not open a browser automatically.
-- [ ] Confirm there are no updater, telemetry, or download prompts.
-- [ ] Confirm Settings reports runtime network as disabled.
+- [ ] Confirm there are no updater, telemetry, or browser prompts; LibreOffice install is offered only after explicit user confirmation.
+- [ ] Confirm Settings reports runtime network as limited to confirmed LibreOffice installation.
 
 ## Organizer
 
@@ -30,12 +38,12 @@ Run this checklist on a clean Windows 10+ machine or VM before publishing a rele
 
 - [ ] Convert a PNG/JPG/WebP image fixture.
 - [ ] Convert CSV to XLSX and XLSX to CSV fixtures.
-- [ ] With FFmpeg present in `binaries/`, convert a small media fixture.
-- [ ] With Pdfium present in `binaries/`, convert a PDF to text or PNG.
+- [ ] Convert a small media fixture with bundled FFmpeg.
+- [ ] Convert a PDF to text or PNG with bundled Pdfium.
 - [ ] Convert local Markdown to PDF.
 - [ ] Confirm Markdown containing `http://` or `https://` is rejected.
 - [ ] With LibreOffice installed locally, convert DOC/DOCX/ODT to PDF.
-- [ ] Confirm missing helpers show English guidance and do not trigger downloads.
+- [ ] Without LibreOffice installed, confirm the first-run prompt asks before any download/install starts.
 - [ ] Confirm existing outputs are skipped/renamed/overwritten only according to the selected conflict policy.
 
 ## Jobs and Settings
@@ -43,10 +51,4 @@ Run this checklist on a clean Windows 10+ machine or VM before publishing a rele
 - [ ] Confirm Jobs / History shows scans, organizer actions, duplicate analysis, and conversions.
 - [ ] Confirm per-file result rows appear for scan/apply/undo/duplicate/conversion jobs.
 - [ ] Save Settings defaults and relaunch; confirm values persist.
-- [ ] Confirm helper statuses are shown for FFmpeg, Pdfium, LibreOffice, and WebView2 guidance.
-
-## Signing and artifact review
-
-- [ ] Confirm the release artifact has been signed through the approved SignPath.io flow.
-- [ ] Confirm the ZIP contains `Filnizer.exe`, `README.md`, `docs/`, and expected `binaries/` helper files.
-- [ ] Confirm license inventory has exact source/version/license entries for bundled helper binaries.
+- [ ] Confirm helper statuses are shown for bundled FFmpeg, bundled Pdfium, LibreOffice, and WebView2 guidance.

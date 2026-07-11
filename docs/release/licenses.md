@@ -10,15 +10,28 @@ This inventory tracks release-time licensing for Filnizer and bundled helper bin
 
 ## Bundled helper binaries
 
-No helper binaries are committed in this repository at this time. When release maintainers add app-local helper binaries to the portable package, fill in the exact version, source URL, checksum, and license below before publishing.
+Portable releases are expected to include app-local FFmpeg and Pdfium under `Filnizer/binaries/`.
+
+Before publishing a release, fill in the exact version, source URL, checksum, and license notes for the actual binaries copied into the package.
 
 | Component | Bundled? | Required for | Version | Source | License notes |
 | --- | --- | --- | --- | --- | --- |
-| FFmpeg | Planned app-local | Media conversion | TBD | TBD | Confirm chosen FFmpeg build license/configuration before bundling. |
-| Pdfium | Planned app-local | PDF conversion | TBD | TBD | Confirm binary source and redistribution terms before bundling. |
-| LibreOffice | No | Office-to-PDF | User-installed | Local system install | Filnizer detects LibreOffice; it does not bundle or download it. |
+| FFmpeg (`binaries/ffmpeg.exe`) | Yes | Media conversion | 8.1.2 | https://www.videohelp.com/software/ffmpeg | Confirm chosen FFmpeg build license/configuration before bundling. LGPL/GPL obligations depend on build options. |
+| Pdfium (`binaries/pdfium.dll`) | Yes | PDF conversion | 146.0.7651.0 | https://www.dllme.com/dll/files/pdfium/bb8e602ea2dc9aa192f1fe9af0b359a2 | Confirm binary source, checksum, and redistribution terms before bundling. |
+| LibreOffice | No | Office-to-PDF | User-installed or user-confirmed winget install | Local system install | Filnizer detects LibreOffice and may install it through Windows winget only after explicit confirmation. |
 | Microsoft Edge WebView2 Runtime | No | Tauri UI runtime on Windows | User/system-installed | Local system install | Filnizer does not bundle or download WebView2. |
+
+## Packaging input
+
+`npm run package:portable` expects helper binaries in `binaries/` by default:
+
+```text
+binaries/ffmpeg.exe
+binaries/pdfium.dll
+```
+
+Alternatively, set `FILNIZER_HELPER_BINARIES_DIR` to a folder containing those files.
 
 ## Release gate
 
-Do not publish a portable ZIP with bundled FFmpeg or Pdfium until this file includes exact binary provenance and license notes for the bundled files.
+Do not publish a portable ZIP until this file includes exact binary provenance and license notes for bundled FFmpeg and Pdfium.

@@ -13,6 +13,23 @@ $BuiltExeCandidates = @(
   (Join-Path $ReleaseTarget "filnizer.exe"),
   (Join-Path $ReleaseTarget "Filnizer.exe")
 )
+$HelperSource = if ($env:FILNIZER_HELPER_BINARIES_DIR) {
+  Resolve-Path $env:FILNIZER_HELPER_BINARIES_DIR
+} else {
+  Join-Path $RepoRoot "binaries"
+}
+$RequiredHelpers = @("ffmpeg.exe", "pdfium.dll")
+
+if (-not (Test-Path $HelperSource)) {
+  throw "Helper binaries folder not found: $HelperSource. Add ffmpeg.exe and pdfium.dll, or set FILNIZER_HELPER_BINARIES_DIR."
+}
+
+foreach ($Helper in $RequiredHelpers) {
+  $HelperPath = Join-Path $HelperSource $Helper
+  if (-not (Test-Path $HelperPath)) {
+    throw "Required helper missing: $HelperPath"
+  }
+}
 
 Write-Host "Building Filnizer frontend..."
 Push-Location $RepoRoot
@@ -36,16 +53,16 @@ New-Item -ItemType Directory -Path $AppFolder | Out-Null
 
 Copy-Item $BuiltExe (Join-Path $AppFolder "Filnizer.exe") -Force
 
-$BinarySources = @(
-  (Join-Path $RepoRoot "binaries"),
-  (Join-Path $RepoRoot "src-tauri\binaries")
-)
-foreach ($Source in $BinarySources) {
-  if (Test-Path $Source) {
-    $Destination = Join-Path $AppFolder "binaries"
-    New-Item -ItemType Directory -Path $Destination -Force | Out-Null
-    Copy-Item (Join-Path $Source "*") $Destination -Recurse -Force
-  }
+$Destination = Join-Path $AppFolder "binaries"
+New-Item -ItemType Directory -Path $Destination -Force | Out-Null
+foreach ($Helper in $RequiredHelpers) {
+  Copy-Item (Join-Path $HelperSource $Helper) (Join-Path $Destination $Helper) -Force
+}
+
+$HelperLicensePatterns = @("LICENSE*", "COPYING*", "NOTICE*", "README*")
+foreach ($Pattern in $HelperLicensePatterns) {
+  Get-ChildItem -Path $HelperSource -Filter $Pattern -File -ErrorAction SilentlyContinue |
+    Copy-Item -Destination $Destination -Force
 }
 
 $DocsFolder = Join-Path $AppFolder "docs"

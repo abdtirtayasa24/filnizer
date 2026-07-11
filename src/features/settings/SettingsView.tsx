@@ -10,6 +10,7 @@ import {
   getAppSettings,
   getAppStatus,
   getConverterToolStatus,
+  installLibreOffice,
   saveAppSettings,
 } from "../../lib/tauri-client";
 
@@ -25,26 +26,35 @@ export function SettingsView() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [tools, setTools] = useState<ToolStatus[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isInstallingLibreOffice, setIsInstallingLibreOffice] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const libreOffice = tools.find((tool) => tool.name === "LibreOffice");
 
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([getAppStatus(), getConverterToolStatus(), getAppSettings()])
-      .then(([appStatus, toolStatus, appSettings]) => {
-        if (isMounted) {
-          setStatus(appStatus);
-          setTools(toolStatus);
-          setSettings(appSettings);
-          setError(null);
-        }
-      })
+    loadSettings()
       .catch((commandError: unknown) => {
         if (isMounted) {
           setError(formatCommandError(commandError));
         }
       });
+
+    async function loadSettings() {
+      const [appStatus, toolStatus, appSettings] = await Promise.all([
+        getAppStatus(),
+        getConverterToolStatus(),
+        getAppSettings(),
+      ]);
+      if (isMounted) {
+        setStatus(appStatus);
+        setTools(toolStatus);
+        setSettings(appSettings);
+        setError(null);
+      }
+    }
 
     return () => {
       isMounted = false;
@@ -55,6 +65,29 @@ export function SettingsView() {
     const selected = await open({ directory: true, multiple: false });
     if (typeof selected === "string") {
       updateSettings({ defaultOutputDirectory: selected });
+    }
+  }
+
+  async function refreshToolStatus() {
+    setTools(await getConverterToolStatus());
+  }
+
+  async function runLibreOfficeInstall() {
+    if (!window.confirm("Download and install LibreOffice using Windows winget now?")) {
+      return;
+    }
+
+    setIsInstallingLibreOffice(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const result = await installLibreOffice();
+      setMessage(result.message);
+      await refreshToolStatus();
+    } catch (installError) {
+      setError(formatCommandError(installError));
+    } finally {
+      setIsInstallingLibreOffice(false);
     }
   }
 
@@ -84,8 +117,8 @@ export function SettingsView() {
   return (
     <section className="content-panel" aria-labelledby="settings-heading">
       <p className="eyebrow">Settings</p>
-      <h2 id="settings-heading">Keep everything local.</h2>
-      <p>Set safe defaults, check helper tools, and confirm Filnizer stays offline at runtime.</p>
+      <h2 id="settings-heading">Local-first, with confirmed installs.</h2>
+      <p>Set safe defaults, check helper tools, and control whether Filnizer may install LibreOffice after asking you first.</p>
 
       <div className="settings-layout">
         <div className="workflow-card settings-card settings-card-wide">
@@ -150,6 +183,15 @@ export function SettingsView() {
               />
               Show privacy note in the app
             </label>
+
+            <label className="checkbox-row settings-checkbox-row">
+              <input
+                type="checkbox"
+                checked={settings?.allowNetworkInstalls ?? true}
+                onChange={(event) => updateSettings({ allowNetworkInstalls: event.currentTarget.checked })}
+              />
+              Allow confirmed LibreOffice network install prompts
+            </label>
           </div>
 
           <div className="action-row">
@@ -161,16 +203,24 @@ export function SettingsView() {
         </div>
 
         <div className="workflow-card settings-card privacy-card">
-          <h3>Privacy posture</h3>
-          <p>Runtime network is intentionally disabled: no telemetry, updates, downloads, remote docs, or remote conversion APIs.</p>
-          <strong>{status ? (status.runtimeNetworkEnabled ? "Network enabled" : "Network silent") : "Checking..."}</strong>
+          <h3>Network install policy</h3>
+          <p>{status?.networkPolicy ?? "Checking network policy..."}</p>
+          <strong>{status ? (status.runtimeNetworkEnabled ? "Confirmed install only" : "Network silent") : "Checking..."}</strong>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={runLibreOfficeInstall}
+            disabled={Boolean(libreOffice?.available) || isInstallingLibreOffice}
+          >
+            {isInstallingLibreOffice ? "Installing LibreOffice..." : "Install LibreOffice"}
+          </button>
         </div>
       </div>
 
       <div className="status-grid settings-status-grid">
         <div className="status-card">
           <span>Runtime network</span>
-          <strong>{status ? (status.runtimeNetworkEnabled ? "Enabled" : "Disabled") : "Checking..."}</strong>
+          <strong>{status ? (status.runtimeNetworkEnabled ? "Confirmed install only" : "Disabled") : "Checking..."}</strong>
         </div>
         <div className="status-card">
           <span>Version</span>

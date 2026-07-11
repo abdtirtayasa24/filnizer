@@ -8,6 +8,7 @@ export type AppStatus = {
   appName: string;
   version: string;
   runtimeNetworkEnabled: boolean;
+  networkPolicy: string;
 };
 
 export type FileCategory =
@@ -122,6 +123,8 @@ export type AppSettings = {
   defaultConflictPolicy: ConflictPolicy;
   historyRetentionDays: number | null;
   showPrivacyNote: boolean;
+  allowNetworkInstalls: boolean;
+  libreofficeInstallPrompted: boolean;
 };
 
 export type JobKind =
@@ -171,6 +174,11 @@ export type ToolStatus = {
   available: boolean;
   path: string | null;
   guidance: string | null;
+};
+
+export type LibreOfficeInstallResult = {
+  started: boolean;
+  message: string;
 };
 
 export async function invokeCommand<T>(
@@ -282,6 +290,10 @@ export function saveAppSettings(settings: AppSettings): Promise<AppSettings> {
   return invokeCommand<AppSettings>("save_app_settings", {
     request: { settings },
   });
+}
+
+export function installLibreOffice(): Promise<LibreOfficeInstallResult> {
+  return invokeCommand<LibreOfficeInstallResult>("install_libreoffice");
 }
 
 export function listJobs(limit = 50): Promise<JobSummary[]> {
