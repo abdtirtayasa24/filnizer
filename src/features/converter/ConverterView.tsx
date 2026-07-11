@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 
 import {
@@ -11,6 +11,7 @@ import {
   convertPdfFiles,
   convertSpreadsheetFiles,
   formatCommandError,
+  getAppSettings,
 } from "../../lib/tauri-client";
 
 type ConversionMode = "image" | "spreadsheet" | "media" | "pdf" | "markdown" | "office";
@@ -71,6 +72,25 @@ export function ConverterView() {
   const [error, setError] = useState<string | null>(null);
 
   const selectedModeDetails = conversionModes.find((mode) => mode.value === selectedMode) ?? conversionModes[0];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getAppSettings()
+      .then((settings) => {
+        if (isMounted) {
+          setOutputDirectory(settings.defaultOutputDirectory);
+          setConflictPolicy(settings.defaultConflictPolicy);
+        }
+      })
+      .catch(() => {
+        // Converter remains usable with safe built-in defaults if settings cannot be loaded.
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   async function chooseImages() {
     const selected = await chooseFiles("Images", [
