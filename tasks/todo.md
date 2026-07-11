@@ -150,7 +150,7 @@
   - Files: `src/features/jobs/*`, `src-tauri/src/jobs/*`, `src-tauri/src/commands/jobs.rs`, `src-tauri/src/db/*`
   - Dependencies: Tasks 12, 19
 
-- [ ] Task 21: Complete Settings UI for defaults, helper status, and history retention
+- [x] Task 21: Complete Settings UI for defaults, helper status, and history retention
   - Acceptance: Settings shows output/conflict defaults, FFmpeg/Pdfium/LibreOffice status, privacy/network-silent note, and retention settings.
   - Verify: Manual settings check; settings repository tests.
   - Files: `src/features/settings/*`, `src-tauri/src/settings/*`, `src-tauri/src/tools/*`, `src-tauri/src/commands/settings.rs`
