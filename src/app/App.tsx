@@ -43,10 +43,15 @@ export function App() {
               aria-current={activeSection === section.id ? "page" : undefined}
               onClick={() => setActiveSection(section.id)}
             >
-              {section.label}
+              <span>{section.label}</span>
             </button>
           ))}
         </nav>
+
+        <div className="sidebar-footer" aria-label="Runtime status">
+          <span className="status-dot" aria-hidden="true" />
+          <span>Offline workspace</span>
+        </div>
       </aside>
 
       {renderSection(activeSection)}
