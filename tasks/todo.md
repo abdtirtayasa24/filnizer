@@ -182,11 +182,11 @@
 
 ## Final Checkpoint
 
-- [ ] `npm run build` passes
-- [ ] `npm run test -- --run` passes if frontend tests exist
-- [ ] `cargo test --manifest-path src-tauri/Cargo.toml` passes
-- [ ] `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passes
-- [ ] `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings` passes
+- [x] `npm run build` passes
+- [x] `npm run test -- --run` passes if frontend tests exist
+- [x] `cargo test --manifest-path src-tauri/Cargo.toml` passes
+- [x] `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check` passes
+- [x] `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings` passes
 - [ ] `cargo audit` reviewed
 - [ ] Portable ZIP/folder launches on Windows 10+
 - [ ] Network-silent behavior manually checked before release
