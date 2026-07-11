@@ -6,6 +6,7 @@ pub mod app;
 pub mod converter;
 pub mod jobs;
 pub mod organizer;
+pub mod settings;
 
 pub type CommandResult<T> = Result<CommandResponse<T>, AppError>;
 

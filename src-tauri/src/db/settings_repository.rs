@@ -74,6 +74,7 @@ mod tests {
         );
 
         let settings = AppSettings {
+            default_output_directory: Some("C:/Users/Test/Output".to_string()),
             default_conflict_policy: ConflictPolicy::Skip,
             history_retention_days: Some(30),
             show_privacy_note: false,
